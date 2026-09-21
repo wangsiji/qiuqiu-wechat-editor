@@ -1,7 +1,7 @@
 {
 	"id": "qiuqiu-wechat-editor",
-	"name": "秋秋公众号编辑器",
-	"version": "0.1.0",
+	"name": "QiuQiu WeChat Editor",
+	"version": "0.1.1",
 	"minAppVersion": "1.4.0",
 	"description": "在 Obsidian 里把当前笔记转成公众号排版：实时预览、一键复制为微信后台可识别的富文本。基于 qiuqiu-wechat-editor 渲染内核。",
 	"author": "思己实验室",
