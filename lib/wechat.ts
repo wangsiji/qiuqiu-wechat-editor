@@ -35,17 +35,17 @@ function wechatInline(s: string, accent?: string): string {
 }
 
 const BODY =
-  "margin:16px 0;padding:0;font-size:17px;line-height:1.85;letter-spacing:.25px;color:#333333;" +
+  "margin:16px 0;padding:0;font-size:17px;line-height:31px;letter-spacing:.25px;color:#333333;" +
   "text-align:justify;overflow-wrap:break-word;" +
   "font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','PingFang SC','Helvetica Neue',Arial,sans-serif;";
 
 // 章节数字（60px 粉红 Times）+ 章节标题（19px 粉红，居中）
 const chapter = (num: number, titleHtml: string) =>
-  '<p style="margin:20px auto 10px;padding:0;text-align:center;font-size:60px;line-height:1;' +
+  '<p style="margin:20px auto 10px;padding:0;text-align:center;font-size:60px;line-height:66px;' +
   "font-weight:700;font-family:'Times New Roman',Times,'Songti SC',serif;color:#D9898E;" +
   'font-variant-numeric:lining-nums tabular-nums;letter-spacing:-1px;white-space:nowrap;">' +
   num +
-  '</p><p style="margin:8px auto 24px;padding:0;text-align:center;font-size:19px;line-height:1.45;' +
+  '</p><p style="margin:8px auto 24px;padding:0;text-align:center;font-size:19px;line-height:28px;' +
   'font-weight:800;color:#D9898E;">' +
   titleHtml +
   "</p>";
@@ -54,7 +54,7 @@ const chapter = (num: number, titleHtml: string) =>
 // 前缀不单独包 <span>：微信后台常把 span 单独转成一个块导致“编号与标题断行”。
 // 整个 <p> 已是蓝色，前缀直接作为普通文本拼在标题前。
 const section = (prefix: string, titleHtml: string) =>
-  '<p style="margin:28px 0 12px;padding:0;font-size:17px;line-height:1.6;font-weight:800;color:#3A8BE8;' +
+  '<p style="margin:28px 0 12px;padding:0;font-size:17px;line-height:27px;font-weight:800;color:#3A8BE8;' +
   'text-align:left;">' +
   prefix +
   titleHtml +
@@ -85,7 +85,7 @@ const imageHtml = (src: string, alt: string, isCover = false, isPortrait = false
 // marker 作为行内蓝色加粗文本（<strong>），与正文段落完全同构，粘贴最稳。
 type ListRow = { ordered: boolean; depth: number; text: string };
 const LIST_LI =
-  "margin:6px 0;padding:0;font-size:17px;line-height:1.85;letter-spacing:.2px;" +
+  "margin:6px 0;padding:0;font-size:17px;line-height:31px;letter-spacing:.2px;" +
   "color:#333333;text-align:left;";
 
 // 平铺渲染：按行输出 <p>，缩进层级用 padding-left 表示。
@@ -118,7 +118,7 @@ const tableHtml = (raw: string[][]) => {
   const head = raw[0]
     .map(
       (c) =>
-        '<th style="color:#5C7D9B;background:#F5F0E8;font-size:14px;font-weight:800;' +
+        '<th style="color:#5C7D9B;background:#F5F0E8;font-size:14px;line-height:23px;font-weight:800;' +
         "letter-spacing:.4px;padding:10px 8px 9px;border-bottom:1px solid #EAE2D7;text-align:center;\">" +
         wechatInline(c.trim()) +
         "</th>"
@@ -143,7 +143,7 @@ const tableHtml = (raw: string[][]) => {
     .join("");
   return (
     '<table style="width:100%;max-width:100%;border-collapse:separate;border-spacing:0;margin:8px 0 10px;' +
-    'font-size:13px;line-height:1.65;table-layout:fixed;word-break:break-word;background:#FFFCF7;' +
+    'font-size:13px;line-height:21px;table-layout:fixed;word-break:break-word;background:#FFFCF7;' +
     'border:1px solid #EEE7DD;border-radius:10px;overflow:hidden;">' +
     "<thead><tr>" +
     head +
@@ -155,7 +155,7 @@ const tableHtml = (raw: string[][]) => {
 
 const codeHtml = (text: string) =>
   '<pre style="color:#E8EEF5;background:#171A1F;border-radius:0;padding:13px 14px;margin:16px 0 20px;' +
-  "overflow-x:auto;white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.65;" +
+  "overflow-x:auto;white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:21px;" +
   "font-family:'SFMono-Regular',Consolas,Menlo,monospace;\">" +
   escapeHtml(text) +
   "</pre>";
@@ -163,7 +163,7 @@ const codeHtml = (text: string) =>
 // 引用：不用 <section> 容器（微信后台会把 section 当作独立容器引发窄排/拆行），
 // 改为连续多行 <p> + 左侧金黄竖线、浅黄底。
 const QUOTE_LINE =
-  "margin:0;padding:3px 12px;font-size:15px;line-height:1.85;color:#333333;" +
+  "margin:0;padding:3px 12px;font-size:15px;line-height:28px;color:#333333;" +
   "text-align:left;border-left:3px solid #DB7A0E;background:#FEF9EA;";
 const quoteHtml = (rows: string[]) =>
   rows
@@ -240,7 +240,7 @@ export function renderWechat(
 
     if (legacyNum) {
       flush();
-      out += '<p style="margin:20px auto 10px;text-align:center;font-size:60px;line-height:1;' +
+      out += '<p style="margin:20px auto 10px;text-align:center;font-size:60px;line-height:66px;' +
         "font-weight:700;font-family:'Times New Roman',Times,'Songti SC',serif;color:#D9898E;\">" +
         legacyNum[1] +
         "</p>";
@@ -283,10 +283,10 @@ export function renderWechat(
         out += section(chapterNo > 0 ? chapterNo + "." + sectionNo + "｜" : String(sectionNo).padStart(2, "0") + "｜", text);
       } else {
         out += '<p style="' + (level === 1
-          ? "margin:8px auto 24px;text-align:center;font-size:19px;line-height:1.45;font-weight:800;color:#D9898E;"
+          ? "margin:8px auto 24px;text-align:center;font-size:19px;line-height:28px;font-weight:800;color:#D9898E;"
           : level === 2
-            ? "margin:28px 0 12px;font-size:17px;line-height:1.6;font-weight:800;color:#3A8BE8;text-align:left;"
-            : "margin:24px 0 10px;font-size:16px;line-height:1.45;font-weight:700;color:#3A8BE8;text-align:left;") + '">' + text + "</p>";
+            ? "margin:28px 0 12px;font-size:17px;line-height:27px;font-weight:800;color:#3A8BE8;text-align:left;"
+            : "margin:24px 0 10px;font-size:16px;line-height:23px;font-weight:700;color:#3A8BE8;text-align:left;") + '">' + text + "</p>";
       }
     } else if (item) {
       if (paragraph.length) flushParagraph();
