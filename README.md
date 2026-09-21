@@ -1,4 +1,8 @@
-# 秋秋公众号编辑器 · Qiuqiu WeChat Editor
+# 秋秋公众号编辑器 · QiuQiu WeChat Editor
+
+**QiuQiu WeChat Editor** turns Markdown into nicely formatted rich text for WeChat Official Account articles, with a live preview and one-click copy to the WeChat editor. It works both as a web app and as an Obsidian plugin, sharing a single render engine (a monorepo: `lib/` is the single source of truth).
+
+Key features: auto chapter numbering, WYSIWYG preview, image inline embedding (base64) for local images, XSS-safe links, and inline `style` attributes so styling survives WeChat's editor sanitizer.
 
 为微信公众号写作打造的 **Markdown → 公众号富文本排版** 工具。同一套渲染内核，两种入口：网页版在线排版 + Obsidian 插件就地排版。
 

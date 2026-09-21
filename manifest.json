@@ -1,9 +1,9 @@
 {
 	"id": "qiuqiu-wechat-editor",
 	"name": "QiuQiu WeChat Editor",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"minAppVersion": "1.4.0",
-	"description": "在 Obsidian 里把当前笔记转成公众号排版：实时预览、一键复制为微信后台可识别的富文本。基于 Obsidian 渲染当前主题 + 公众号排版内核。",
+	"description": "将当前编辑的 Markdown 排版为公众号富文本：实时预览、一键复制为微信后台可识别的 HTML；支持本地图片内联与防 XSS。基于 qiuqiu-wechat-editor 渲染内核。 Make WeChat article styling from Markdown with live preview and one-click copy.",
 	"author": "思己实验室",
 	"authorUrl": "https://github.com/wangsiji",
 	"isDesktopOnly": false
