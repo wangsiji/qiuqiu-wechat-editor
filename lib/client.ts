@@ -42,32 +42,27 @@ export async function detectPortrait(srcs: string[]): Promise<Set<string>> {
  * 优先 ClipboardItem；Safari 兜底用隐藏 contentEditable + execCommand。
  */
 export async function copyRichText(html: string): Promise<void> {
-  const plain = document.createElement("div");
-  // eslint-disable-next-line -- 富文本剪贴板需解析 HTML
-  plain.innerHTML = html;
-  const Item = typeof ClipboardItem === "undefined" ? null : ClipboardItem;
-  if (
-    Item &&
-    typeof navigator.clipboard?.write === "function" &&
-    (typeof Item.supports !== "function" || Item.supports("text/html"))
-  ) {
+  // 解析富文本时不写 innerHTML（Obsidian 审核禁 no-inner-html），用标准 DOMParser。
+  const parsedBody = () =>
+    new DOMParser().parseFromString(html, "text/html").body;
+  const plainText = parsedBody().textContent || "";
+  type CI = { supports?: (type: string) => boolean };
+  const hasHTML =
+    typeof ClipboardItem !== "undefined" &&
+    ((ClipboardItem as CI).supports?.("text/html") ?? true);
+  if (hasHTML && typeof navigator.clipboard?.write === "function") {
     await navigator.clipboard.write([
-      new Item({
+      new ClipboardItem({
         "text/html": new Blob([html], { type: "text/html" }),
-        "text/plain": new Blob([plain.textContent || ""], {
-          type: "text/plain",
-        }),
+        "text/plain": new Blob([plainText], { type: "text/plain" }),
       }),
     ]);
     return;
   }
   const holder = document.createElement("div");
   holder.contentEditable = "true";
-  // eslint-disable-next-line -- 富文本剪贴板需落容器 innerHTML（Safari/execCommand 兜底）
-  holder.innerHTML = html;
-  // eslint-disable-next-line -- 隐藏复制容器需固定内联定位
-  holder.style.cssText =
-    "position:fixed;left:-100000px;top:0;opacity:0;pointer-events:none;";
+  holder.classList.add("qwe-clip-holder"); // 定位样式放 CSS，禁内联 style
+  holder.append(...Array.from(parsedBody().childNodes));
   document.body.appendChild(holder);
   const sel = window.getSelection();
   const range = document.createRange();

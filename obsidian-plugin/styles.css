@@ -169,6 +169,8 @@
 .article-paper pre code { padding: 0; color: #e8eef5; background: transparent; font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px; line-height: 1.65; white-space: pre-wrap; }
 .article-paper img { display: block; box-sizing: border-box; width: 100%; max-width: 100%; height: auto; margin: 18px auto 10px; border: 1px solid #3a8be8; border-radius: 0; box-shadow: none; }
 .article-paper img:first-of-type { display: block; width: 100%; height: auto; margin: 0 0 20px; border: none; border-radius: 0; }
+.article-paper img.qwe-portrait { width: 75%; max-width: 75%; }
+.qwe-clip-holder { position: fixed; left: -100000px; top: 0; opacity: 0; pointer-events: none; }
 .article-paper table {
   width: 100%; max-width: 100%; border-collapse: separate; border-spacing: 0;
   margin: 8px 0 10px; font-size: 13px; line-height: 1.65; table-layout: fixed;

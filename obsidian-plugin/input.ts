@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf, ItemView } from "obsidian";
+import { Plugin, WorkspaceLeaf, ItemView, sanitizeHTMLToDom } from "obsidian";
 import { renderWechat } from "../lib/wechat";
 import { copyRichText, detectPortrait, imageSrcs } from "../lib/client";
 
@@ -142,8 +142,9 @@ class QiuqiuView extends ItemView {
 
     const refresh = async () => {
       // 预览与复制用同一 renderWechat HTML，所见即所得：编号/图片/内外链全一致。
-      // eslint-disable-next-line -- 预览容器需写入生成的富文本 HTML
-      this.paper.innerHTML = await previewHtml();
+      // 用 sanitizeHTMLToDom 注入（Obsidian 审核禁 innerHTML，官方提供该安全 API）。
+      this.paper.empty();
+      this.paper.append(sanitizeHTMLToDom(await previewHtml()));
     };
 
     // 生成「导出/预览」统一的富文本 HTML：剥 frontmatter → 本地图转 data URI → renderWechat

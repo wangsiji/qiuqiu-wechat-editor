@@ -114,10 +114,8 @@ export default function Home() {
     let cancelled = false;
     const apply = (img: HTMLImageElement) => {
       if (cancelled || !isPortrait(img)) return;
-      // eslint-disable-next-line -- 竖图按公众号规范内联缩 75% 宽（单一主题渲染）
-      img.style.width = "75%";
-      // eslint-disable-next-line -- 与上一条一致的内联 max-width
-      img.style.maxWidth = "75%";
+      // 竖图按公众号规范缩 75% 宽：走 CSS 类（Obsidian 审核禁内联 style）
+      img.classList.add("qwe-portrait");
     };
     for (const img of Array.from(paper.querySelectorAll<HTMLImageElement>("img"))) {
       if (img.complete) apply(img);
