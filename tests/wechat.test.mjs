@@ -103,6 +103,16 @@ test("微信导出：图片带 width:100% 且 src 转义", () => {
   assert.match(html, /src="https:\/\/a\.com\/x\?a=1&amp;b=2"/);
 });
 
+test("微信导出：竖图按 75% 宽居中，横图仍通栏", () => {
+  const html = renderWechat("![竖图](https://a.com/p.jpg)\n\n![横图](https://a.com/l.jpg)\n", {
+    portrait: new Set(["https://a.com/p.jpg"]),
+  });
+  const portraitTag = html.slice(html.indexOf("p.jpg"), html.indexOf("p.jpg") + 200);
+  assert.match(portraitTag, /width:75%;max-width:75%/);
+  const landTag = html.slice(html.indexOf("l.jpg"), html.indexOf("l.jpg") + 200);
+  assert.match(landTag, /width:100%;max-width:100%/);
+});
+
 test("微信导出：行内代码/加粗/斜体/删除线都带内联样式", () => {
   const html = renderWechat("正文 `code` **重点** *斜体* ~~删线~~ [链接](https://example.com)\n");
   assert.match(html, /<code style="color:#12A98D[^"]*">code<\/code>/);

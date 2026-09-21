@@ -114,6 +114,41 @@ async function copyRichHtml(html: string) {
   }
 }
 
+// 竖图判定：高 > 宽。naturalWidth 为 0 表示还没量到，按横图处理。
+const isPortrait = (img: HTMLImageElement) =>
+  img.naturalWidth > 0 && img.naturalHeight > img.naturalWidth;
+
+// 从 Markdown 取出图片地址（量图和导出共用）。
+const imageSrcs = (text: string) =>
+  Array.from(text.matchAll(/![[^]]*](([^)]+))/g)).map((match) => match[1]);
+
+// 逐张量出竖图地址；加载失败或超 5 秒的按横图处理，避免卡住复制。
+async function detectPortrait(srcs: string[]): Promise<Set<string>> {
+  const measured = await Promise.all(
+    Array.from(new Set(srcs)).map(
+      (src) =>
+        new Promise<{ src: string; portrait: boolean } | null>((resolve) => {
+          const probe = new Image();
+          let settled = false;
+          let timer = 0;
+          const finish = (value: { src: string; portrait: boolean } | null) => {
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(timer);
+            resolve(value);
+          };
+          timer = window.setTimeout(() => finish(null), 5000);
+          probe.onload = () => finish({ src, portrait: isPortrait(probe) });
+          probe.onerror = () => finish(null);
+          probe.src = src;
+        })
+    )
+  );
+  const portrait = new Set<string>();
+  for (const item of measured) if (item && item.portrait) portrait.add(item.src);
+  return portrait;
+}
+
 // 旧默认示例内容特征：带手写编号“# 1、”。检测到这类历史草稿时重置为新示例，
 // 避免用户看到旧模板排版；用户自己写的正文（不含该特征）不受影响。
 const OLD_SAMPLE_MARKER = "# 1、认识你的 AI 工作台";
@@ -138,6 +173,25 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, [md]);
 
+  // 竖图（高 > 宽）在预览里也按 75% 宽显示，与复制到公众号的效果保持一致。
+  useEffect(() => {
+    const paper = document.querySelector<HTMLElement>(".article-paper");
+    if (!paper) return;
+    let cancelled = false;
+    const apply = (img: HTMLImageElement) => {
+      if (cancelled || !isPortrait(img)) return;
+      img.style.width = "75%";
+      img.style.maxWidth = "75%";
+    };
+    for (const img of Array.from(paper.querySelectorAll<HTMLImageElement>("img"))) {
+      if (img.complete) apply(img);
+      else img.addEventListener("load", () => apply(img), { once: true });
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [html]);
+
   const add = (text: string) => {
     const editor = ref.current;
     if (!editor) return;
@@ -148,7 +202,9 @@ export default function Home() {
   const copy = async () => {
     // 微信导出：直接从 Markdown 生成全内联 HTML（不用 getComputedStyle 抄预览样式，
     // 避免微信后台清洗预览 DOM 导致样式漂移，见网页版 GPT 评审）
-    const copyHtml = renderWechat(md);
+    // 竖图比例只有浏览器知道，复制前先量一次；图片多已在预览里缓存，很快。
+    const portrait = await detectPortrait(imageSrcs(md));
+    const copyHtml = renderWechat(md, { portrait });
     // 外链图片计数直接解析导出 HTML，避免预览与导出两个 DOM 不一致
     const externalImages = (copyHtml.match(/<img[^>]+src="https?:/g) || []).length;
     try {

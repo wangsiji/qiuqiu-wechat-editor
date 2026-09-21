@@ -55,15 +55,25 @@ const section = (prefix: string, titleHtml: string) =>
   titleHtml +
   "</p>";
 
-// 图片：微信要求全宽。首图（文章第一张）按主题无描边，正文图带蓝色细描边。
-const imageHtml = (src: string, alt: string, isCover = false) =>
-  '<img src="' +
-  escapeHtml(safeUrl(src)) +
-  '" alt="' +
-  escapeHtml(alt) +
-  '" style="display:block;box-sizing:border-box;width:100%;max-width:100%;height:auto;margin:18px auto 10px;' +
-  (isCover ? "border:none;border-radius:0;" : "border:1px solid #3A8BE8;border-radius:0;") +
-  '"/>';
+// 图片：默认通栏。首图（文章第一张）按主题无描边，正文图带蓝色细描边。
+// 竖图（高 > 宽）默认 75% 宽居中，避免长图在手机里过高。
+// 图片实际比例只有浏览器知道，故由调用方量好后通过 portrait 传入。
+const imageHtml = (src: string, alt: string, isCover = false, isPortrait = false) => {
+  const width = isPortrait ? "75%" : "100%";
+  return (
+    '<img src="' +
+    escapeHtml(safeUrl(src)) +
+    '" alt="' +
+    escapeHtml(alt) +
+    '" style="display:block;box-sizing:border-box;width:' +
+    width +
+    ";max-width:" +
+    width +
+    ";height:auto;margin:18px auto 10px;" +
+    (isCover ? "border:none;border-radius:0;" : "border:1px solid #3A8BE8;border-radius:0;") +
+    '"/>'
+  );
+};
 
 // 列表：微信对 list-style 支持不稳定，且 <ul>/<li> 粘贴后微信会把首段格式化
 // 元素当成项目符号单独成行。这里全部用 <p> 平铺：每个列表项一个段落，
@@ -156,7 +166,11 @@ const quoteHtml = (rows: string[]) =>
     .join("");
 
 // 逐行块级解析（预览渲染器同一套逻辑，但输出微信专用 HTML）
-export function renderWechat(md: string): string {
+export function renderWechat(
+  md: string,
+  options: { portrait?: ReadonlySet<string> } = {}
+): string {
+  const portraitSrcs = options.portrait;
   const lines = md.split(/\r?\n/);
   const legacy = /^#{6}\s+(\d+)$/.test(lines.join("\n")) ||
     lines.some((l) => /^#{1,2}\s+\d+[、.．)）（：]/.test(l));
@@ -249,7 +263,7 @@ export function renderWechat(md: string): string {
     } else if (image) {
       flush();
       imageCount += 1;
-      out += imageHtml(image[2], image[1], imageCount === 1);
+      out += imageHtml(image[2], image[1], imageCount === 1, portraitSrcs ? portraitSrcs.has(image[2]) : false);
     } else if (heading) {
       flush();
       const level = heading[1].length;
