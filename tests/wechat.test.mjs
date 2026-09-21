@@ -51,7 +51,7 @@ test("微信导出：危险链接/图片被净化", () => {
 test("微信导出：代码块、引用、分割线、表格", () => {
   const md = "> 引用\n\n---\n\n```js\nconst x=1;\n```\n\n| a | b |\n| --- | --- |\n| 1 | 2 |\n";
   const html = renderWechat(md);
-  assert.match(html, /<p style="[^"]*border-left:3px solid #74AEEF/);
+  assert.match(html, /<p style="[^"]*border-left:3px solid #E6B23C/);
   assert.match(html, /<pre style="/);
   assert.match(html, /<table style="/);
   assert.match(html, /display:inline-block;width:46px/);
@@ -60,7 +60,7 @@ test("微信导出：代码块、引用、分割线、表格", () => {
 
 test("微信导出：连续引用行合并为一个引用块", () => {
   const html = renderWechat("> 第一行\n> 第二行\n");
-  assert.equal((html.match(/<p style="[^"]*border-left:3px solid #74AEEF/g) || []).length, 2);
+  assert.equal((html.match(/<p style="[^"]*border-left:3px solid #E6B23C/g) || []).length, 2);
   assert.match(html, /第一行<\/p><p style="[^"]*">第二行/);
 });
 

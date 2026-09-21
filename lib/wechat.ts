@@ -146,10 +146,10 @@ const codeHtml = (text: string) =>
   "</pre>";
 
 // 引用：不用 <section> 容器（微信后台会把 section 当作独立容器引发窄排/拆行），
-// 改为连续多行 <p> + 左侧蓝边。
+// 改为连续多行 <p> + 左侧金黄竖线、浅黄底。
 const QUOTE_LINE =
   "margin:0;padding:3px 12px;font-size:17px;line-height:1.85;color:#333333;" +
-  "text-align:left;border-left:3px solid #74AEEF;background:#F7FAFE;";
+  "text-align:left;border-left:3px solid #E6B23C;background:#FEF9EA;";
 const quoteHtml = (rows: string[]) =>
   rows
     .map((q) => '<p style="' + QUOTE_LINE + '">' + wechatInline(q) + "</p>")
