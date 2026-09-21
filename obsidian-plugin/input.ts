@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf, ItemView } from "obsidian";
+import { Plugin, WorkspaceLeaf, ItemView, MarkdownView } from "obsidian";
 import { renderWechat } from "../lib/wechat";
 
 export const VIEW_TYPE = "qiuqiu-wechat-editor-view";
@@ -164,6 +164,21 @@ class QiuqiuView extends ItemView {
     return "paintbrush";
   }
 
+  // 优化1: Obsidian 笔记滚动时，让右侧预览按比例同步滚动（编辑/源模式为主）。
+  // 监听 document 捕获阶段 scroll，只认当前活动 Markdown 编辑器的滚动容器。
+  private bindScrollSync(stage: HTMLElement) {
+    const onScrollCapture = (e: Event) => {
+      const t = e.target as Element | null;
+      if (!t || !t.closest(".cm-scroller")) return; // 只跟源编辑器滚动
+      const sc = t.closest(".cm-scroller") as HTMLElement | null;
+      if (!sc) return;
+      const max = Math.max(0, sc.scrollHeight - sc.clientHeight);
+      const sMax = Math.max(0, stage.scrollHeight - stage.clientHeight);
+      if (max > 0) stage.scrollTop = (sc.scrollTop / max) * sMax;
+    };
+    this.registerDomEvent(document, "scroll", onScrollCapture, true);
+  }
+
   async onOpen() {
     const root = this.contentEl.createDiv({ cls: "qwe-root" });
     const topbar = root.createDiv({ cls: "qwe-topbar" });
@@ -186,7 +201,9 @@ class QiuqiuView extends ItemView {
     const btnCopy = actions.createEl("button", { cls: "qwe-btn qwe-copy", text: "复制到公众号" });
 
     const body = root.createDiv({ cls: "qwe-body" });
-    this.paper = body.createDiv({ cls: "qwe-stage" }).createDiv({ cls: "article-paper" });
+    const stage = body.createDiv({ cls: "qwe-stage" }); // .qwe-stage 是预览滚动容器
+    this.paper = stage.createDiv({ cls: "article-paper" });
+    this.bindScrollSync(stage);
 
     const refresh = async () => {
       // 预览与复制用同一 renderWechat HTML，所见即所得：编号/图片/内外链全一致。
@@ -227,7 +244,7 @@ class QiuqiuView extends ItemView {
     );
 
     btnCopy.addEventListener("click", async () => {
-      const html = await this.previewHtml();
+      const html = await previewHtml(); // previewHtml 是闭包(非 this 方法)，勿加 this.
       const external = (html.match(/<img[^>]+src="https?:/g) || []).length;
       try {
         await copyRich(html);
