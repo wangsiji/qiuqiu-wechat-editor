@@ -142,6 +142,7 @@ class QiuqiuView extends ItemView {
 
     const refresh = async () => {
       // 预览与复制用同一 renderWechat HTML，所见即所得：编号/图片/内外链全一致。
+      // eslint-disable-next-line -- 预览容器需写入生成的富文本 HTML
       this.paper.innerHTML = await previewHtml();
     };
 

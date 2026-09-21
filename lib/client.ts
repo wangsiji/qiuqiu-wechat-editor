@@ -43,6 +43,7 @@ export async function detectPortrait(srcs: string[]): Promise<Set<string>> {
  */
 export async function copyRichText(html: string): Promise<void> {
   const plain = document.createElement("div");
+  // eslint-disable-next-line -- 富文本剪贴板需解析 HTML
   plain.innerHTML = html;
   const Item = typeof ClipboardItem === "undefined" ? null : ClipboardItem;
   if (
@@ -62,7 +63,9 @@ export async function copyRichText(html: string): Promise<void> {
   }
   const holder = document.createElement("div");
   holder.contentEditable = "true";
+  // eslint-disable-next-line -- 富文本剪贴板需落容器 innerHTML（Safari/execCommand 兜底）
   holder.innerHTML = html;
+  // eslint-disable-next-line -- 隐藏复制容器需固定内联定位
   holder.style.cssText =
     "position:fixed;left:-100000px;top:0;opacity:0;pointer-events:none;";
   document.body.appendChild(holder);
