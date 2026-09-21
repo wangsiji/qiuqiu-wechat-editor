@@ -1,0 +1,10 @@
+{
+	"id": "qiuqiu-wechat-editor",
+	"name": "秋秋公众号编辑器",
+	"version": "0.1.0",
+	"minAppVersion": "1.4.0",
+	"description": "在 Obsidian 里把 Markdown 一键转成公众号排版：左侧编辑、右侧「秋秋同款」主题实时预览，复制为微信后台可识别的富文本。基于 qiuqiu-wechat-editor。",
+	"author": "qiuqiu",
+	"authorUrl": "https://github.com/qqhkx2027",
+	"isDesktopOnly": false
+}

@@ -1,0 +1,15 @@
+{
+  "name": "qiuqiu-wechat-editor-obsidian",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "node esbuild.config.mjs production",
+    "test": "node tests/smoke.test.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "typescript": "^5.0.0",
+    "obsidian": "latest"
+  }
+}

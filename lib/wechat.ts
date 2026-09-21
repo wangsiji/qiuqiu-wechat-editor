@@ -9,6 +9,11 @@
 
 import { escapeHtml, safeUrl } from "./render.ts";
 
+// 图片 src 额外放行 data:image URI（公众号 Markdown 里以 base64 内联本地图时用）。
+// 链接 <a href> 仍锁死 safeUrl，不允许 data:，防 XSS。
+const imgSrc = (url: string) =>
+  /^data:image/i.test(url.trim()) ? url.trim() : safeUrl(url);
+
 const INLINE_CODE =
   "color:#12A98D;background:#F1FAF8;font-family:'SFMono-Regular',Consolas,Menlo,monospace;" +
   "font-size:.88em;line-height:1.5;padding:1px 3px;border-radius:2px;overflow-wrap:anywhere;";
@@ -21,7 +26,7 @@ function wechatInline(s: string, accent?: string): string {
   const strong = "color:" + (accent || "#3A8BE8") + ";font-weight:700;";
   const em = "color:" + (accent || "#3A8BE8") + ";font-style:italic;";
   return escapeHtml(s)
-    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m: string, alt: string, src: string) => '<img src="' + escapeHtml(safeUrl(src)) + '" alt="' + escapeHtml(alt) + '"/>')
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m: string, alt: string, src: string) => '<img src="' + escapeHtml(imgSrc(src)) + '" alt="' + escapeHtml(alt) + '"/>')
     .replace(/`([^`]+)`/g, (_m: string, c: string) => '<code style="' + INLINE_CODE + '">' + c + '</code>')
     .replace(/~~([^~]+)~~/g, (_m: string, t: string) => '<span style="' + STRIKE_STYLE + '">' + t + '</span>')
     .replace(/\*\*([^*]+)\*\*/g, (_m: string, t: string) => '<strong style="' + strong + '">' + t + '</strong>')
@@ -62,7 +67,7 @@ const imageHtml = (src: string, alt: string, isCover = false, isPortrait = false
   const width = isPortrait ? "75%" : "100%";
   return (
     '<img src="' +
-    escapeHtml(safeUrl(src)) +
+    escapeHtml(imgSrc(src)) +
     '" alt="' +
     escapeHtml(alt) +
     '" style="display:block;box-sizing:border-box;width:' +
