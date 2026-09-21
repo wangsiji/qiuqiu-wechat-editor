@@ -58,8 +58,8 @@ const chapter = (num: number, titleHtml: string) =>
   "font-weight:700;font-family:'Times New Roman',Times,'Songti SC',serif;color:#D9898E;" +
   'font-variant-numeric:lining-nums tabular-nums;letter-spacing:-1px;white-space:nowrap;">' +
   num +
-  '</p><p style="margin:8px auto 26px;padding:0 0 6px;text-align:center;font-size:19px;line-height:28px;' +
-  "font-weight:800;color:#D9898E;border-bottom:1px solid #D9898E;\">" +
+  '</p><p style="margin:8px auto 24px;padding:0;text-align:center;font-size:19px;line-height:28px;' +
+  'font-weight:800;color:#D9898E;">' +
   titleHtml +
   "</p>";
 

@@ -2,7 +2,7 @@
 .article-paper{color:#333;background:#fff;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue",Arial,sans-serif}
 .article-paper p,.article-paper li{color:#333;font-size:17px;line-height:1.85;letter-spacing:.25px;text-align:justify;overflow-wrap:break-word}
 .article-paper p{margin:16px 0}
-.article-paper h1{display:table;box-sizing:border-box;width:auto;max-width:100%;margin:8px auto 24px;padding:0 0 6px;border:0;border-bottom:1px solid #d9898e;color:#d9898e;font-size:19px;font-weight:800;line-height:1.45;letter-spacing:.25px;text-align:center;-webkit-text-stroke:0}
+.article-paper h1{display:table;box-sizing:border-box;width:auto;max-width:100%;margin:8px auto 24px;padding:0 0 6px;border:0;color:#d9898e;font-size:19px;font-weight:800;line-height:1.45;letter-spacing:.25px;text-align:center;-webkit-text-stroke:0}
 .article-paper h1 + p{font-size:17px;line-height:1.85;letter-spacing:.2px;margin:8px 0 20px}
 .article-paper h2{margin:28px 0 12px;padding:0;color:#3a8be8;font-size:17px;font-weight:800;line-height:1.6;letter-spacing:.25px;-webkit-text-stroke:0}
 .article-paper h3{margin:24px 0 10px;padding:0;color:#3a8be8;font-size:16px;font-weight:700;line-height:1.45}

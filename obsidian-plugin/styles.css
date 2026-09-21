@@ -130,7 +130,7 @@
 .article-paper h1 + p { font-size: 17px; line-height: 1.85; letter-spacing: 0.2px; margin: 8px 0 20px; }
 .article-paper h1 {
   display: table; box-sizing: border-box; width: auto; max-width: 100%;
-  margin: 8px auto 24px; padding: 0 0 6px; border: 0; border-bottom: 1px solid #d9898e;
+  margin: 8px auto 24px; padding: 0 0 6px; border: 0;
   color: #d9898e; font-size: 19px; font-weight: 800; line-height: 1.45;
   letter-spacing: 0.25px; text-align: center; -webkit-text-stroke: 0;
 }
