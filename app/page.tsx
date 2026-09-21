@@ -81,73 +81,7 @@ console.log(editor.name);
 
 import { render } from "../lib/render";
 import { renderWechat } from "../lib/wechat";
-
-async function copyRichHtml(html: string) {
-  const clipboardItem = typeof ClipboardItem === "undefined" ? null : ClipboardItem;
-  const canWriteHtml = clipboardItem && typeof navigator.clipboard?.write === "function" && (typeof clipboardItem.supports !== "function" || clipboardItem.supports("text/html"));
-  if (canWriteHtml) {
-    try {
-      const plain = document.createElement("div");
-      plain.innerHTML = html;
-      await navigator.clipboard.write([new clipboardItem({ "text/html": new Blob([html], { type: "text/html" }), "text/plain": new Blob([plain.textContent || ""], { type: "text/plain" }) })]);
-      return;
-    } catch {
-      // Safari can expose ClipboardItem while still rejecting text/html.
-    }
-  }
-  if (typeof document.execCommand !== "function") throw new Error("Rich clipboard is not supported");
-  const holder = document.createElement("div");
-  holder.contentEditable = "true";
-  holder.innerHTML = html;
-  holder.style.cssText = "position:fixed;left:-100000px;top:0;opacity:0;pointer-events:none;";
-  document.body.appendChild(holder);
-  const selection = window.getSelection();
-  const range = document.createRange();
-  range.selectNodeContents(holder);
-  selection?.removeAllRanges();
-  selection?.addRange(range);
-  try {
-    if (!document.execCommand("copy")) throw new Error("Copy command failed");
-  } finally {
-    selection?.removeAllRanges();
-    holder.remove();
-  }
-}
-
-// 竖图判定：高 > 宽。naturalWidth 为 0 表示还没量到，按横图处理。
-const isPortrait = (img: HTMLImageElement) =>
-  img.naturalWidth > 0 && img.naturalHeight > img.naturalWidth;
-
-// 从 Markdown 取出图片地址（量图和导出共用）。
-const imageSrcs = (text: string) =>
-  Array.from(text.matchAll(/![[^]]*](([^)]+))/g)).map((match) => match[1]);
-
-// 逐张量出竖图地址；加载失败或超 5 秒的按横图处理，避免卡住复制。
-async function detectPortrait(srcs: string[]): Promise<Set<string>> {
-  const measured = await Promise.all(
-    Array.from(new Set(srcs)).map(
-      (src) =>
-        new Promise<{ src: string; portrait: boolean } | null>((resolve) => {
-          const probe = new Image();
-          let settled = false;
-          let timer = 0;
-          const finish = (value: { src: string; portrait: boolean } | null) => {
-            if (settled) return;
-            settled = true;
-            window.clearTimeout(timer);
-            resolve(value);
-          };
-          timer = window.setTimeout(() => finish(null), 5000);
-          probe.onload = () => finish({ src, portrait: isPortrait(probe) });
-          probe.onerror = () => finish(null);
-          probe.src = src;
-        })
-    )
-  );
-  const portrait = new Set<string>();
-  for (const item of measured) if (item && item.portrait) portrait.add(item.src);
-  return portrait;
-}
+import { copyRichText, detectPortrait, imageSrcs, isPortrait } from "../lib/client";
 
 // 旧默认示例内容特征：带手写编号“# 1、”。检测到这类历史草稿时重置为新示例，
 // 避免用户看到旧模板排版；用户自己写的正文（不含该特征）不受影响。
@@ -208,7 +142,7 @@ export default function Home() {
     // 外链图片计数直接解析导出 HTML，避免预览与导出两个 DOM 不一致
     const externalImages = (copyHtml.match(/<img[^>]+src="https?:/g) || []).length;
     try {
-      await copyRichHtml(copyHtml);
+      await copyRichText(copyHtml);
       setCopyStatus("copied");
       setNotice(externalImages ? `已复制；${externalImages} 张外链图片可能需要先上传到公众号素材库` : "已复制富文本，可直接粘贴到公众号");
     } catch {

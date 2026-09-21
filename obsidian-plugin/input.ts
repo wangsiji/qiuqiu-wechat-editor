@@ -1,10 +1,8 @@
-import { Plugin, WorkspaceLeaf, ItemView, MarkdownView } from "obsidian";
+import { Plugin, WorkspaceLeaf, ItemView } from "obsidian";
 import { renderWechat } from "../lib/wechat";
+import { copyRichText, detectPortrait, imageSrcs } from "../lib/client";
 
 export const VIEW_TYPE = "qiuqiu-wechat-editor-view";
-
-const isPortrait = (img: HTMLImageElement) =>
-  img.naturalWidth > 0 && img.naturalHeight > img.naturalWidth;
 
 // ArrayBuffer → base64（分块，避免大图超栈）
 function arrayBufferToBase64(buf: ArrayBuffer): string {
@@ -18,69 +16,6 @@ function arrayBufferToBase64(buf: ArrayBuffer): string {
     );
   }
   return btoa(bin);
-}
-
-const imageSrcs = (text: string) =>
-  Array.from(text.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)).map((m) => m[1]);
-
-async function detectPortrait(srcs: string[]): Promise<Set<string>> {
-  const measured = await Promise.all(
-    Array.from(new Set(srcs)).map(
-      (src) =>
-        new Promise<string | null>((resolve) => {
-          const img = new Image();
-          let settled = false;
-          let timer = 0;
-          const finish = (v: string | null) => {
-            if (settled) return;
-            settled = true;
-            window.clearTimeout(timer);
-            resolve(v);
-          };
-          timer = window.setTimeout(() => finish(null), 5000);
-          img.onload = () => finish(isPortrait(img) ? src : null);
-          img.onerror = () => finish(null);
-          img.src = src;
-        })
-    )
-  );
-  return new Set(measured.filter((s): s is string => !!s));
-}
-
-async function copyRich(html: string): Promise<void> {
-  const plain = document.createElement("div");
-  plain.innerHTML = html;
-  const Item = typeof ClipboardItem === "undefined" ? null : ClipboardItem;
-  if (
-    Item &&
-    typeof navigator.clipboard?.write === "function" &&
-    (typeof Item.supports !== "function" || Item.supports("text/html"))
-  ) {
-    await navigator.clipboard.write([
-      new Item({
-        "text/html": new Blob([html], { type: "text/html" }),
-        "text/plain": new Blob([plain.textContent || ""], { type: "text/plain" }),
-      }),
-    ]);
-    return;
-  }
-  const holder = document.createElement("div");
-  holder.contentEditable = "true";
-  holder.innerHTML = html;
-  holder.style.cssText =
-    "position:fixed;left:-100000px;top:0;opacity:0;pointer-events:none;";
-  document.body.appendChild(holder);
-  const sel = window.getSelection();
-  const range = document.createRange();
-  range.selectNodeContents(holder);
-  sel?.removeAllRanges();
-  sel?.addRange(range);
-  try {
-    if (!document.execCommand("copy")) throw new Error("copy failed");
-  } finally {
-    sel?.removeAllRanges();
-    holder.remove();
-  }
 }
 
 class QiuqiuView extends ItemView {
@@ -110,7 +45,7 @@ class QiuqiuView extends ItemView {
   //    读成 base64 data URI 内联，微信粘贴时图片才能直接显示。
   // ponytail: 顺序逐个替换（不用 async 直接塞进 String.replace，那会产出 "[object Promise]"）。
   private async exportMarkdown(): Promise<string> {
-    let md = this.stripFrontmatter(this.md);
+    const md = this.stripFrontmatter(this.md);
     const note = this.linked || this.plugin.getActiveNote();
     const srcPath = note?.path || "";
     const dataUri = async (target: string): Promise<string | null> => {
@@ -237,7 +172,7 @@ class QiuqiuView extends ItemView {
       })
     );
     this.registerEvent(
-      this.app.workspace.on("active-leaf-change", async (_leaf) => {
+      this.app.workspace.on("active-leaf-change", async () => {
         const active = this.plugin.getActiveNote();
         if (active && active !== this.linked) await loadActive();
       })
@@ -247,7 +182,7 @@ class QiuqiuView extends ItemView {
       const html = await previewHtml(); // previewHtml 是闭包(非 this 方法)，勿加 this.
       const external = (html.match(/<img[^>]+src="https?:/g) || []).length;
       try {
-        await copyRich(html);
+        await copyRichText(html);
         notice.textContent = external
           ? "已复制；" + external + " 张外链图需先传公众号素材库"
           : "已复制富文本，可直接粘贴到公众号";
