@@ -39,14 +39,27 @@ const BODY =
   "text-align:justify;overflow-wrap:break-word;" +
   "font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','PingFang SC','Helvetica Neue',Arial,sans-serif;";
 
-// 章节数字（60px 粉红 Times）+ 章节标题（19px 粉红，居中）
+// 导语：紧跟 h1 之后的第一个段落，间距收紧、字距微调（同 h1 + p 规则）。
+const LEAD_BODY =
+  "margin:8px 0 20px;padding:0;font-size:17px;line-height:31px;letter-spacing:.2px;color:#333333;" +
+  "text-align:justify;overflow-wrap:break-word;" +
+  "font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','PingFang SC','Helvetica Neue',Arial,sans-serif;";
+
+// Callout 信息条：浅蓝底 + 蓝色左线。微信不支持自由容器，按规格用每条
+// <p> 承载整条背景/左边线（与引用同思路），标题行用蓝色加粗。
+const CALLOUT_TITLE =
+  "margin:0;padding:4px 14px 2px;font-size:15px;line-height:1.6;font-weight:700;color:#3A8BE8;text-align:left;background:#F6FAFE;border-left:3px solid #3A8BE8;";
+const CALLOUT_LINE =
+  "margin:0;padding:2px 14px 4px;font-size:15px;line-height:1.6;color:#333333;text-align:left;background:#F6FAFE;border-left:3px solid #3A8BE8;";
+
+// 章节数字（60px 粉红 Times）+ 章节标题（19px 粉红，居中，带等宽细粉下划线）
 const chapter = (num: number, titleHtml: string) =>
   '<p style="margin:20px auto 10px;padding:0;text-align:center;font-size:60px;line-height:66px;' +
   "font-weight:700;font-family:'Times New Roman',Times,'Songti SC',serif;color:#D9898E;" +
   'font-variant-numeric:lining-nums tabular-nums;letter-spacing:-1px;white-space:nowrap;">' +
   num +
-  '</p><p style="margin:8px auto 24px;padding:0;text-align:center;font-size:19px;line-height:28px;' +
-  'font-weight:800;color:#D9898E;">' +
+  '</p><p style="margin:8px auto 26px;padding:0 0 6px;text-align:center;font-size:19px;line-height:28px;' +
+  "font-weight:800;color:#D9898E;border-bottom:1px solid #D9898E;\">" +
   titleHtml +
   "</p>";
 
@@ -85,7 +98,7 @@ const imageHtml = (src: string, alt: string, isCover = false, isPortrait = false
 // marker 作为行内蓝色加粗文本（<strong>），与正文段落完全同构，粘贴最稳。
 type ListRow = { ordered: boolean; depth: number; text: string };
 const LIST_LI =
-  "margin:6px 0;padding:0;font-size:17px;line-height:31px;letter-spacing:.2px;" +
+  "margin:6px 0;padding:0;font-size:16px;line-height:30px;letter-spacing:.2px;" +
   "color:#333333;text-align:left;";
 
 // 平铺渲染：按行输出 <p>，缩进层级用 padding-left 表示。
@@ -188,17 +201,30 @@ export function renderWechat(
   let listRows: Array<{ ordered: boolean; depth: number; text: string }> = [];
   let chapterNo = 0;
   let sectionNo = 0;
+  // 紧跟 h1 之后的第一个正文段用导语样式（h1 + p 规则）。
+  let pendingLead = false;
+  // 正在收集的 callout（> [!类型] 标题）。null = 不在 callout 内。
+  let callout: { title: string; rows: string[] } | null = null;
 
   const flushParagraph = () => {
     if (paragraph.length) {
-      out += '<p style="' + BODY + '">' + wechatInline(paragraph.join(" ")) + "</p>";
+      out += '<p style="' + (pendingLead ? LEAD_BODY : BODY) + '">' + wechatInline(paragraph.join(" ")) + "</p>";
       paragraph = [];
+      pendingLead = false;
     }
   };
   const flushQuote = () => {
     if (quoteSection.length) {
       out += quoteHtml(quoteSection);
       quoteSection = [];
+    }
+  };
+  const flushCallout = () => {
+    if (callout) {
+      out +=
+        '<p style="' + CALLOUT_TITLE + '">' + wechatInline(callout.title) + "</p>" +
+        callout.rows.map((r) => '<p style="' + CALLOUT_LINE + '">' + wechatInline(r) + "</p>").join("");
+      callout = null;
     }
   };
   const flushList = () => {
@@ -210,6 +236,7 @@ export function renderWechat(
   const flush = () => {
     flushParagraph();
     flushQuote();
+    flushCallout();
     flushList();
   };
 
@@ -278,6 +305,7 @@ export function renderWechat(
         chapterNo += 1;
         sectionNo = 0;
         out += chapter(chapterNo, text);
+        pendingLead = true;
       } else if (!legacy && level === 2 && !handNum) {
         sectionNo += 1;
         out += section(chapterNo > 0 ? chapterNo + "." + sectionNo + "｜" : String(sectionNo).padStart(2, "0") + "｜", text);
@@ -296,10 +324,22 @@ export function renderWechat(
       listRows.push({ ordered, depth, text: item[3] });
     } else if (line.startsWith(">")) {
       if (paragraph.length) flushParagraph();
-      quoteSection.push(line.replace(/^>\s?/, ""));
+      const content = line.replace(/^>\s?/, "");
+      const calloutStart = content.match(/^\[!(note|tip|warning|warn|info|important|success|question|example|danger|caution|quote)\][\s:]?(.*)$/i);
+      if (calloutStart) {
+        if (quoteSection.length) flushQuote();
+        // 开始/替换一条 callout。多行 callout 标题以最后一行为准。
+        if (!callout) callout = { title: "", rows: [] };
+        callout.title = calloutStart[2];
+      } else if (callout) {
+        callout.rows.push(content);
+      } else {
+        quoteSection.push(content);
+      }
     } else if (!line.trim()) {
       flush();
     } else {
+      if (callout) flushCallout();
       paragraph.push(line.trim());
     }
   }

@@ -119,13 +119,15 @@
 }
 .article-paper p, .article-paper li {
   color: #333;
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.85;
   letter-spacing: 0.25px;
   text-align: justify;
   overflow-wrap: break-word;
 }
 .article-paper p { margin: 16px 0; }
+/* h1 之后的导语段（h1 + p 规则） */
+.article-paper h1 + p { font-size: 17px; line-height: 1.85; letter-spacing: 0.2px; margin: 8px 0 20px; }
 .article-paper h1 {
   display: table; box-sizing: border-box; width: auto; max-width: 100%;
   margin: 8px auto 24px; padding: 0 0 6px; border: 0; border-bottom: 1px solid #d9898e;
@@ -178,3 +180,13 @@
 .article-paper td { background: #fffcf7; padding: 10px 9px 11px; }
 .article-paper td + td { border-left: 1px solid #f0e9df; }
 .article-paper hr { border: 0; border-top: 1px solid #74aeef; width: 46px; margin: 32px auto; }
+/* 图注、小灰字、callout（对齐 qiuqiu.css） */
+.article-paper figcaption { color: #858585; font-size: 12px; line-height: 1.55; letter-spacing: 0.15px; text-align: left; margin: 0 auto 18px; }
+.article-paper small, .article-paper .muted { color: #a0a0a0; font-size: 12px; line-height: 1.65; letter-spacing: 0.2px; }
+.article-paper .callout, .article-paper .owc-callout {
+  box-sizing: border-box; background: #f6fafe; border: 0; border-left: 3px solid #3a8be8;
+  border-radius: 0; padding: 11px 14px; margin: 20px 0; overflow: hidden;
+}
+.article-paper .callout-title, .article-paper .owc-callout-title { color: #3a8be8; font-size: 14px; font-weight: 700; line-height: 1.6; margin: 0 0 5px; }
+.article-paper .callout p, .article-paper .owc-callout p { margin: 0 0 6px; font-size: 15px; }
+.article-paper .callout p:last-child, .article-paper .owc-callout p:last-child { margin-bottom: 0; }

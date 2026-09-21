@@ -192,7 +192,20 @@ export function render(md: string): string {
       listRows.push({ depth, tag, text: item[3] });
     } else if (line.startsWith(">")) {
       if (paragraph.length) flush();
-      quote.push(line.replace(/^>\s?/, ""));
+      const content = line.replace(/^>\s?/, "");
+      const calloutStart = content.match(/^\[!(note|tip|warning|warn|info|important|success|question|example|danger|caution|quote)\][\s:]?(.*)$/i);
+      if (calloutStart) {
+        html += "<blockquote class=\"owc-callout\">" + (calloutStart[2] ? "<p class=\"owc-callout-title\">" + inline(calloutStart[2]) + "</p>" : "");
+        let j = i + 1;
+        while (j < lines.length && lines[j].startsWith(">")) {
+          html += "<p>" + inline(lines[j].replace(/^>\s?/, "")) + "</p>";
+          j += 1;
+        }
+        i = j - 1;
+        html += "</blockquote>";
+      } else {
+        quote.push(content);
+      }
     } else if (!line.trim()) {
       flush();
     } else {
