@@ -64,6 +64,11 @@ test("微信导出：连续引用行合并为一个引用块", () => {
   assert.match(html, /第一行<\/p><p style="[^"]*">第二行/);
 });
 
+test("微信导出：引用字号 15px", () => {
+  const html = renderWechat("> 引用\n");
+  assert.match(html, /<p style="[^"]*font-size:15px[^"]*border-left:3px solid #DB7A0E/);
+});
+
 test("微信导出：不用 section 标签，避免公众号窄容器拆行", () => {
   const html = renderWechat("> 引用\n\n---\n\n## 小节\n");
   assert.doesNotMatch(html, /<section/i);
