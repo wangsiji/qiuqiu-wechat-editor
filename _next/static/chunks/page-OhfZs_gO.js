@@ -83,11 +83,39 @@ console.log(editor.support.length); // 16
 
 ## 七、分隔线
 
-分隔线用 \`---\`，是一段居中的细细蓝色短线，用于不设小标题时的内容分节（就像你前面看到的多次使用）。它不依赖任何容器，粘贴进公众号不会触发拆行。
+分隔线用 \`---\`，是一段居中的细细蓝色短线，用于不设小标题时的内容分节。它不依赖任何容器，粘贴进公众号不会触发拆行。
+
+---
+
+# 排版参数速查
+
+上面演示了每种写法长什么样，下面这张表把每种元素的**字号、字重、颜色、行高**列清楚——它不是示例文案，而是当前这套排版内核实际用的数值（完整定义见代码里 \`lib/wechat.ts\` 的常量）。
+
+| 元素 | 写法 | 字号 | 字重 | 颜色 | 行高 |
+| --- | --- | --- | --- | --- | --- |
+| 正文段落 | 直接写 | 17px | 默认 | #333333 | 31px |
+| 导语（紧跟 \`#\` 标题） | 第一段 | 17px | 默认 | #333333 | 31px |
+| 章节数字 | \`# 标题\` | 60px | 700 | #D9898E 粉 | 66px |
+| 章节标题 | \`# 标题\` | 19px | 800 | #D9898E 粉 | 28px |
+| 小节标题 | \`## 标题\` | 17px | 800 | #3A8BE8 蓝 | 27px |
+| 三级小节 | \`### 标题\` | 16px | 700 | #3A8BE8 蓝 | 23px |
+| 列表项 | \`- /\`\`1.\` | 16px | 默认 | #333333 | 30px |
+| 表格表头 | 表首行 | 14px | 800 | #5C7D9B 灰蓝 | 23px |
+| 表格正文 | 表 | 13px | 400 | #333333 | 21px |
+| 引用快讯 | \`> 内容\` | 15px | 默认 | #333333 | 28px |
+| 提示条 | \`> [!type]\` | 15px | 标题700 | #3A8BE8 蓝 | 1.6 |
+| 行内代码 | \`代码\` | 0.88em | 默认 | #12A98D 青 | 1.5 |
+| 代码块 | \`\`\` 代码 \`\`\` | 13px | 400 | #E8EEF5 浅字/深底 | 21px |
+| 链接 | [文字](网址) | 随段 | 500 | #16B99A 绿 | — |
+| 删除线 | \`~~文字~~\` | 随段 | 默认 | #3A8BE8 蓝 | — |
+
+**配色速记**：正文字灰 #333、一二三级标题为粉 #D9898E → 蓝 #3A8BE8 递进；强调与链接用青绿 #16B99A；行内代码青底 #12A98D / 浅青底 #F1FAF8；代码块深色 #171A1F；引用金黄 #DB7A0E + 浅黄底 #FEF9EA；提示条蓝 #3A8BE8 + 浅蓝底 #F6FAFE；表格表头灰蓝 #5C7D9B + 米白底。
+
+---
 
 # 关于这份示例
 
-你会看到这篇全要素示例把上面 7 大类能力都过了一遍：**章节与导语**、**正文图片与竖图**、**数据表格**、**有序/无序/嵌套列表**、**引用与 Callout 提示条**、**行内代码与代码块**、**分隔线**。把这些语法组合起来，就能稳定地产出排版一致的公众号文章。`,B=`# 1、认识你的 AI 工作台`;function V(){let[e,t]=(0,i.useState)(()=>{let e=localStorage.getItem(`qiuqiu-draft-v2`);return e&&!e.includes(B)?e:z}),[n,a]=(0,i.useState)(`qiuqiu`),[o,s]=(0,i.useState)(`idle`),[c,l]=(0,i.useState)(``),u=(0,i.useRef)(null),d=(0,i.useRef)(null),f=R.find(e=>e[0]===n)||R[0],p=(0,i.useMemo)(()=>h(e),[e]);(0,i.useEffect)(()=>{let t=window.setTimeout(()=>localStorage.setItem(`qiuqiu-draft-v2`,e),300);return()=>window.clearTimeout(t)},[e]),(0,i.useEffect)(()=>{let e=document.querySelector(`.article-paper`);if(!e)return;let t=!1,n=e=>{t||!P(e)||e.classList.add(`qwe-portrait`)};for(let t of Array.from(e.querySelectorAll(`img`)))t.complete?n(t):t.addEventListener(`load`,()=>n(t),{once:!0});return()=>{t=!0}},[p]);let m=n=>{let r=u.current;if(!r)return;let i=r.selectionStart,a=r.selectionEnd;t(e.slice(0,i)+n+e.slice(a))};return(0,r.jsxs)(`main`,{className:`editor-shell`,children:[(0,r.jsxs)(`header`,{className:`topbar`,children:[(0,r.jsxs)(`div`,{className:`brand-lockup`,children:[(0,r.jsx)(`div`,{className:`brand-mark`,children:`秋`}),(0,r.jsxs)(`div`,{children:[(0,r.jsx)(`div`,{className:`brand-name`,children:`秋秋编辑器`}),(0,r.jsx)(`div`,{className:`brand-subtitle`,children:`公众号 Markdown 排版工作台`})]})]}),(0,r.jsxs)(`div`,{className:`top-actions`,children:[(0,r.jsx)(`span`,{className:`copy-notice`,style:{maxWidth:300,overflow:`hidden`,color:`#718296`,fontSize:10,textOverflow:`ellipsis`,whiteSpace:`nowrap`},"aria-live":`polite`,children:c}),(0,r.jsx)(`button`,{className:`quiet-button`,onClick:()=>t(z),"aria-label":`恢复示例 Markdown`,children:`恢复示例`}),(0,r.jsx)(`button`,{className:`quiet-button`,onClick:()=>d.current?.click(),"aria-label":`导入 Markdown 文件`,children:`导入 Markdown`}),(0,r.jsx)(`input`,{ref:d,hidden:!0,type:`file`,accept:`.md,.markdown,.txt`,"aria-label":`Markdown 文件`,onChange:async e=>{let n=e.target.files?.[0];n&&t(await n.text())}}),(0,r.jsx)(`button`,{className:`copy-button`,onClick:async()=>{let t=N(e,{portrait:await I(F(e))}),n=(t.match(/<img[^>]+src="https?:/g)||[]).length;try{await L(t),s(`copied`),l(n?`已复制；${n} 张外链图片可能需要先上传到公众号素材库`:`已复制富文本，可直接粘贴到公众号`)}catch{s(`error`),l(`复制富文本失败，请使用最新版 Chrome 或 Safari`)}window.setTimeout(()=>s(`idle`),1800)},"aria-label":`复制排版后的内容到公众号`,children:o===`copied`?`已复制 ✓`:o===`error`?`复制失败`:`复制到公众号`})]})]}),(0,r.jsxs)(`section`,{className:`workspace`,children:[(0,r.jsxs)(`aside`,{className:`editor-panel`,children:[(0,r.jsxs)(`div`,{className:`panel-heading`,children:[(0,r.jsxs)(`div`,{children:[(0,r.jsx)(`span`,{className:`eyebrow`,children:`WRITE`}),(0,r.jsx)(`h1`,{children:`Markdown 草稿`})]}),(0,r.jsx)(`span`,{className:`save-dot`,children:`已自动保存`})]}),(0,r.jsxs)(`div`,{className:`toolbar`,"aria-label":`Markdown 工具栏`,children:[(0,r.jsx)(`button`,{onClick:()=>m(`**重点文字**`),"aria-label":`插入加粗文本`,title:`加粗`,children:`B`}),(0,r.jsx)(`button`,{onClick:()=>m(`# 一级标题
+上面把 7 大类能力 + \`排版参数速查\` 都过了一遍：**章节与导语、正文图片与竖图、数据表格、有序/无序/嵌套列表、引用与 Callout 提示条、行内代码与代码块、分隔线**。想改字号或颜色，直接编辑 \`lib/wechat.ts\` 里对应的常量（正文 \`BODY\`、章节 \`chapter()\`、小节 \`section()\`、列表 \`LIST_LI\`、表格 \`tableHtml()\`、代码 \`codeHtml()\`、引用 \`QUOTE_LINE\`、提示条 \`CALLOUT_*\`、链接 \`LINK_STYLE\` 等），保存后预览与复制到公众号都会同步生效。`,B=`# 1、认识你的 AI 工作台`;function V(){let[e,t]=(0,i.useState)(()=>{let e=localStorage.getItem(`qiuqiu-draft-v2`);return e&&!e.includes(B)?e:z}),[n,a]=(0,i.useState)(`qiuqiu`),[o,s]=(0,i.useState)(`idle`),[c,l]=(0,i.useState)(``),u=(0,i.useRef)(null),d=(0,i.useRef)(null),f=R.find(e=>e[0]===n)||R[0],p=(0,i.useMemo)(()=>h(e),[e]);(0,i.useEffect)(()=>{let t=window.setTimeout(()=>localStorage.setItem(`qiuqiu-draft-v2`,e),300);return()=>window.clearTimeout(t)},[e]),(0,i.useEffect)(()=>{let e=document.querySelector(`.article-paper`);if(!e)return;let t=!1,n=e=>{t||!P(e)||e.classList.add(`qwe-portrait`)};for(let t of Array.from(e.querySelectorAll(`img`)))t.complete?n(t):t.addEventListener(`load`,()=>n(t),{once:!0});return()=>{t=!0}},[p]);let m=n=>{let r=u.current;if(!r)return;let i=r.selectionStart,a=r.selectionEnd;t(e.slice(0,i)+n+e.slice(a))};return(0,r.jsxs)(`main`,{className:`editor-shell`,children:[(0,r.jsxs)(`header`,{className:`topbar`,children:[(0,r.jsxs)(`div`,{className:`brand-lockup`,children:[(0,r.jsx)(`div`,{className:`brand-mark`,children:`秋`}),(0,r.jsxs)(`div`,{children:[(0,r.jsx)(`div`,{className:`brand-name`,children:`秋秋编辑器`}),(0,r.jsx)(`div`,{className:`brand-subtitle`,children:`公众号 Markdown 排版工作台`})]})]}),(0,r.jsxs)(`div`,{className:`top-actions`,children:[(0,r.jsx)(`span`,{className:`copy-notice`,style:{maxWidth:300,overflow:`hidden`,color:`#718296`,fontSize:10,textOverflow:`ellipsis`,whiteSpace:`nowrap`},"aria-live":`polite`,children:c}),(0,r.jsx)(`button`,{className:`quiet-button`,onClick:()=>t(z),"aria-label":`恢复示例 Markdown`,children:`恢复示例`}),(0,r.jsx)(`button`,{className:`quiet-button`,onClick:()=>d.current?.click(),"aria-label":`导入 Markdown 文件`,children:`导入 Markdown`}),(0,r.jsx)(`input`,{ref:d,hidden:!0,type:`file`,accept:`.md,.markdown,.txt`,"aria-label":`Markdown 文件`,onChange:async e=>{let n=e.target.files?.[0];n&&t(await n.text())}}),(0,r.jsx)(`button`,{className:`copy-button`,onClick:async()=>{let t=N(e,{portrait:await I(F(e))}),n=(t.match(/<img[^>]+src="https?:/g)||[]).length;try{await L(t),s(`copied`),l(n?`已复制；${n} 张外链图片可能需要先上传到公众号素材库`:`已复制富文本，可直接粘贴到公众号`)}catch{s(`error`),l(`复制富文本失败，请使用最新版 Chrome 或 Safari`)}window.setTimeout(()=>s(`idle`),1800)},"aria-label":`复制排版后的内容到公众号`,children:o===`copied`?`已复制 ✓`:o===`error`?`复制失败`:`复制到公众号`})]})]}),(0,r.jsxs)(`section`,{className:`workspace`,children:[(0,r.jsxs)(`aside`,{className:`editor-panel`,children:[(0,r.jsxs)(`div`,{className:`panel-heading`,children:[(0,r.jsxs)(`div`,{children:[(0,r.jsx)(`span`,{className:`eyebrow`,children:`WRITE`}),(0,r.jsx)(`h1`,{children:`Markdown 草稿`})]}),(0,r.jsx)(`span`,{className:`save-dot`,children:`已自动保存`})]}),(0,r.jsxs)(`div`,{className:`toolbar`,"aria-label":`Markdown 工具栏`,children:[(0,r.jsx)(`button`,{onClick:()=>m(`**重点文字**`),"aria-label":`插入加粗文本`,title:`加粗`,children:`B`}),(0,r.jsx)(`button`,{onClick:()=>m(`# 一级标题
 
 `),"aria-label":`插入一级标题`,title:`一级标题`,children:`H1`}),(0,r.jsx)(`button`,{onClick:()=>m(`> 引用
 `),"aria-label":`插入引用`,title:`引用`,children:`❞`}),(0,r.jsx)(`button`,{onClick:()=>m(`- 列表项
