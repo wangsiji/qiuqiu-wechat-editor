@@ -13,7 +13,7 @@ import{r as e}from"./rolldown-runtime-C60lm6uB.js";import{i as t,r as n}from"./f
 
 ---
 
-## 二、正文里的图片
+## 正文里的图片
 
 图片单独成行时自动通栏并带蓝色描边，居中排布：
 
@@ -23,7 +23,7 @@ import{r as e}from"./rolldown-runtime-C60lm6uB.js";import{i as t,r as n}from"./f
 
 ---
 
-## 三、数据表格
+## 数据表格
 
 | 功能 | 写法 | 状态 |
 | --- | --- | --- |
@@ -35,7 +35,7 @@ import{r as e}from"./rolldown-runtime-C60lm6uB.js";import{i as t,r as n}from"./f
 
 ---
 
-## 四、列表
+## 列表
 
 无序列表和有序列表都支持，还能多级缩进：
 
@@ -55,7 +55,7 @@ import{r as e}from"./rolldown-runtime-C60lm6uB.js";import{i as t,r as n}from"./f
 
 ---
 
-## 五、引用与提示条
+## 引用与提示条
 
 > 这是引用块：浅黄底 + 金色左竖线，适合放「摘要」或「强调某段观点」。连续几行都写 \`>\` 会合成一整块。
 
@@ -67,7 +67,7 @@ import{r as e}from"./rolldown-runtime-C60lm6uB.js";import{i as t,r as n}from"./f
 
 ---
 
-## 六、代码块
+## 代码块
 
 行内代码、代码块都能用。代码块深色底 + 等宽字体，自动换行：
 
@@ -81,7 +81,7 @@ console.log(editor.support.length); // 16
 
 ---
 
-## 七、分隔线
+## 分隔线
 
 分隔线用 \`---\`，是一段居中的细细蓝色短线，用于不设小标题时的内容分节。它不依赖任何容器，粘贴进公众号不会触发拆行。
 
