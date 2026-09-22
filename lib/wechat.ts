@@ -289,7 +289,11 @@ export function renderWechat(
       }
       i -= 1;
       const cleaned = rows.map((r) =>
-        r.replace(/^\s*\|?/, "").replace(/\|?\s*$/, "").split("|")
+        r
+          .replace(/^\s*\|?/, "")
+          .replace(/\|?\s*$/, "")
+          .split(/(?<!\\)\|/) // ponytail: 仅按未转义 | 分列; `\|` 保留字面竖线
+          .map((c) => c.replace(/\\\|/g, "|"))
       );
       out += tableHtml([cleaned[0], ...cleaned.slice(2)]);
     } else if (image) {

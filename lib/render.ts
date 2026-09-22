@@ -118,9 +118,11 @@ export function render(md: string): string {
   };
   const renderTable = (rows: string[]) => {
     const clean = (row: string) => row.replace(/^\s*\|?/, "").replace(/\|?\s*$/, "");
-    const head = clean(rows[0]).split("|");
+    const cellsOf = (row: string) =>
+      clean(row).split(/(?<!\\)\|/).map((c) => c.replace(/\\\|/g, "|")); // ponytail: 仅按未转义 | 分列; `\|` 保留字面竖线
+    const head = cellsOf(rows[0]);
     const body = rows.slice(2).map((row) => {
-      const cells = clean(row).split("|").map((cell) => "<td>" + inline(cell.trim()) + "</td>").join("");
+      const cells = cellsOf(row).map((cell) => "<td>" + inline(cell.trim()) + "</td>").join("");
       return "<tr>" + cells + "</tr>";
     });
     return ("<table><thead><tr>" +

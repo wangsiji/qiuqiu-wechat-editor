@@ -46,6 +46,14 @@ test("表格渲染", () => {
   assert.match(html, /<td>1<\/td><td>2<\/td>/);
 });
 
+test("表格单元格内字面竖线被保留，不拆分列", () => {
+  const md = "| 功能 | 写法 |\n| --- | --- |\n| 数据表格 | \\`\\| 单元格 \\|\\` |\n";
+  const html = render(md);
+  // 仍是 2 列
+  assert.match(html, /<tr><td>数据表格<\/td><td>.*?单元格/);
+  assert.doesNotMatch(html, /<td>数据表格<\/td><td><\/td>/);
+});
+
 test("代码块", () => {
   const html = render("```js\nconst a = 1;\n```\n");
   assert.match(html, /<pre><code>const a = 1;<\/code><\/pre>/);
