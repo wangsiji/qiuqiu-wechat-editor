@@ -173,6 +173,8 @@
 .article-paper .qwe-carousel { white-space: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 6px 0; text-align: center; }
 .article-paper .qwe-carousel .qwe-carousel-item { display: inline-block; vertical-align: top; width: 100%; margin: 0; }
 .article-paper .qwe-carousel img { width: 100%; max-width: 100%; height: auto; border: 1px solid #3A8BE8; border-radius: 4px; }
+.qwe-carousel-hint { text-align: center; font-size: 12px; line-height: 18px; color: #8C8C8C; margin: 4px 0; }
+.qwe-carousel-hint .qwe-b { color: #3A8BE8; }
 .qwe-clip-holder { position: fixed; left: -100000px; top: 0; opacity: 0; pointer-events: none; }
 .article-paper table {
   width: 100%; max-width: 100%; border-collapse: separate; border-spacing: 0;

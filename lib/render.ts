@@ -193,7 +193,8 @@ export function render(md: string): string {
                 '"/></span>'
             )
             .join("") +
-          "</div>";
+          "</div>" +
+          '<div class="qwe-carousel-hint"><span class="qwe-b">（</span>左右滑动图片<span class="qwe-b">）</span></div>';
       } else {
         html += '<img src="' + escapeHtml(safeUrl(group[0][0])) + '" alt="' + escapeHtml(group[0][1]) + '"/>';
       }

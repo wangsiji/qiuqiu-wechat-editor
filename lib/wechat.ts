@@ -116,9 +116,11 @@ const carouselHtml = (imgs: Array<[string, string]>, portraitSrcs?: ReadonlySet<
     })
     .join("");
   return (
-    '<section style="white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:6px auto;text-align:center;">' +
+    '<section style="white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:6px auto 0;text-align:center;">' +
     items +
-    "</section>"
+    "</section>" +
+    // 图片下方一行小字提示（括号用蓝色），微信内联样式。
+    '<p style="display:block;margin:0 0 20px;padding:0;text-align:center;font-size:12px;line-height:18px;color:#8C8C8C;"><span style="color:#3A8BE8;">（</span>左右滑动图片<span style="color:#3A8BE8;">）</span></p>'
   );
 };
 
