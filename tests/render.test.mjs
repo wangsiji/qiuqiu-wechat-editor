@@ -47,11 +47,23 @@ test("表格渲染", () => {
 });
 
 test("表格单元格内字面竖线被保留，不拆分列", () => {
-  const md = "| 功能 | 写法 |\n| --- | --- |\n| 数据表格 | \\`\\| 单元格 \\|\\` |\n";
+  const md = "| 功能 | 写法 |\n| --- | --- |\n| 数据表格 | \\\\`\\\\| 单元格 \\\\|\\\\` |\n";
   const html = render(md);
   // 仍是 2 列
   assert.match(html, /<tr><td>数据表格<\/td><td>.*?单元格/);
   assert.doesNotMatch(html, /<td>数据表格<\/td><td><\/td>/);
+});
+
+test("预览：连续多张一行一图自动并排为横滑容器", () => {
+  const html = render("![a](/a.png)\n![b](/b.png)\n![c](/c.png)\n");
+  assert.equal((html.match(/class="qwe-carousel"/g) || []).length, 1);
+  assert.equal((html.match(/qwe-carousel-item/g) || []).length, 3);
+});
+
+test("预览：单张图片仍保持独立", () => {
+  const html = render("![x](/x.png)\n");
+  assert.doesNotMatch(html, /qwe-carousel/);
+  assert.match(html, /<img src="\/x\.png"/);
 });
 
 test("代码块", () => {

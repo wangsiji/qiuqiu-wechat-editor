@@ -172,7 +172,32 @@ export function render(md: string): string {
       html += renderTable(rows);
     } else if (image) {
       flush();
-      html += '<img src="' + escapeHtml(safeUrl(image[2])) + '" alt="' + escapeHtml(image[1]) + '"/>';
+      // 连续多行一行一图（中间无空行）→ 并排滑动条；单独/空行分隔 → 原单图。
+      const group: Array<[string, string]> = [[image[2], image[1]]];
+      let j = i + 1;
+      while (j < lines.length) {
+        const im = lines[j].match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+        if (!im) break;
+        group.push([im[2], im[1]]);
+        j += 1;
+      }
+      if (group.length >= 2) {
+        html +=
+          '<div class="qwe-carousel">' +
+          group
+            .map(([src, alt]) =>
+              '<span class="qwe-carousel-item"><img src="' +
+                escapeHtml(safeUrl(src)) +
+                '" alt="' +
+                escapeHtml(alt) +
+                '"/></span>'
+            )
+            .join("") +
+          "</div>";
+      } else {
+        html += '<img src="' + escapeHtml(safeUrl(group[0][0])) + '" alt="' + escapeHtml(group[0][1]) + '"/>';
+      }
+      i = j - 1;
     } else if (heading) {
       flush();
       const level = heading[1].length;

@@ -132,3 +132,21 @@ test("微信导出：手写编号的 h1/h2 不再叠加自动前缀", () => {
   assert.doesNotMatch(html, /font-size:60px/);
   assert.doesNotMatch(html, /1\.1｜/);
 });
+
+test("微信导出：连续多张一行一图自动并排为横滑容器", () => {
+  const html = renderWechat("![a](/a.png)\n![b](/b.png)\n![c](/c.png)\n");
+  assert.match(html, /<section style="[^"]*overflow-x:auto/);
+  assert.equal((html.match(/<img src="\/[abc]\.png"/g) || []).length, 3);
+  assert.match(html, /display:inline-block/);
+});
+
+test("微信导出：单张图片仍保持原单图逻辑(不包横滑容器)", () => {
+  const html = renderWechat("![x](/x.png)\n");
+  assert.doesNotMatch(html, /overflow-x:auto/);
+  assert.match(html, /<img src="\/x\.png"/);
+});
+
+test("微信导出：图片并排时首图不当作封面", () => {
+  const html = renderWechat("![a](/a.png)\n![b](/b.png)\n\n正文文字\n");
+  assert.doesNotMatch(html, /border:none;border-radius:0;/);
+});

@@ -93,6 +93,34 @@ const imageHtml = (src: string, alt: string, isCover = false, isPortrait = false
   );
 };
 
+// 连续多张一行一图的图片自动并排为横向滑动条（微信可用的多图方案）。
+// 每张 inline-block、单个竖图仍按 75% 缩。横滑容器用 section 且不写自闭合，
+// 避免微信把自闭合 section 当未关闭容器（同分隔线注释里的坑）。
+const carouselHtml = (imgs: Array<[string, string]>, portraitSrcs?: ReadonlySet<string>) => {
+  const items = imgs
+    .map(([src, alt]) => {
+      const p = portraitSrcs && portraitSrcs.has(src);
+      const width = p ? "75%" : "47%";
+      return (
+        '<img src="' +
+        escapeHtml(imgSrc(src)) +
+        '" alt="' +
+        escapeHtml(alt) +
+        '" style="display:inline-block;vertical-align:top;box-sizing:border-box;width:' +
+        width +
+        ";max-width:" +
+        width +
+        ";height:auto;margin:18px 1.5% 10px;border:1px solid #3A8BE8;border-radius:4px;\"/>"
+      );
+    })
+    .join("");
+  return (
+    '<section style="white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:6px auto;">' +
+    items +
+    "</section>"
+  );
+};
+
 // 列表：微信对 list-style 支持不稳定，且 <ul>/<li> 粘贴后微信会把首段格式化
 // 元素当成项目符号单独成行。这里全部用 <p> 平铺：每个列表项一个段落，
 // marker 作为行内蓝色加粗文本（<strong>），与正文段落完全同构，粘贴最稳。
@@ -298,8 +326,24 @@ export function renderWechat(
       out += tableHtml([cleaned[0], ...cleaned.slice(2)]);
     } else if (image) {
       flush();
-      imageCount += 1;
-      out += imageHtml(image[2], image[1], imageCount === 1, portraitSrcs ? portraitSrcs.has(image[2]) : false);
+      // 连续多行一行一图（中间无空行）→ 并排滑动条；单独/空行分隔 → 原单图。
+      const firstCount = imageCount + 1;
+      const group: Array<[string, string]> = [[image[2], image[1]]];
+      let j = i + 1;
+      while (j < lines.length) {
+        const im = lines[j].match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+        if (!im) break;
+        group.push([im[2], im[1]]);
+        j += 1;
+      }
+      imageCount += group.length;
+      if (group.length >= 2) {
+        out += carouselHtml(group, portraitSrcs);
+      } else {
+        // 首图（文章第一张）不带 cover 边框逻辑；这里若首图被并排则无 cover 语义。
+        out += imageHtml(group[0][0], group[0][1], firstCount === 1, portraitSrcs ? portraitSrcs.has(group[0][0]) : false);
+      }
+      i = j - 1;
     } else if (heading) {
       flush();
       const level = heading[1].length;
