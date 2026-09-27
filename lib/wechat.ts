@@ -111,12 +111,15 @@ const carouselHtml = (imgs: Array<[string, string]>, portraitSrcs?: ReadonlySet<
         width +
         ";max-width:" +
         width +
-        ";-webkit-box-sizing:border-box;box-sizing:border-box;height:auto;margin:18px auto 10px;border:1px solid #3A8BE8;border-radius:4px;\"/>"
+        ";height:auto;margin:10px auto;border:1px solid #3A8BE8;border-radius:4px;scroll-snap-align:start;" +
+        // 超高图限高 90vh 并 contain，保证单张完整可见
+        "max-height:90vh;object-fit:contain;\" />"
       );
     })
     .join("");
   return (
-    '<section style="white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:6px auto 0;text-align:center;">' +
+    // 加 scroll-snap 让单张平滑吸附，默认显示完整的一张
+    '<section style="white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;margin:6px auto 0;text-align:center;">' +
     items +
     "</section>" +
     // 图片下方一行小字提示（括号用蓝色），微信内联样式。
