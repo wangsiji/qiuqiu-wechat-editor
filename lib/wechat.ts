@@ -93,14 +93,15 @@ const imageHtml = (src: string, alt: string, isCover = false, isPortrait = false
   );
 };
 
-// 连续多张一行一图的图片自动并排为横向滑动条（微信可用的多图方案）。
-// 每张 inline-block、单个竖图仍按 75% 缩。横滑容器用 section 且不写自闭合，
-// 避免微信把自闭合 section 当未关闭容器（同分隔线注释里的坑）。
+// 连续多张一行一图的图片自动并排为整屏一张的横向滑动（微信可用的多图方案）。
+// 每张 item 占满容器宽度(竖图例外仍75%居中避免过长)，一次只显示一张，
+// 左右滑动逐张切换。容器用 section 且不写自闭合，避免微信把自闭合 section
+// 当未关闭容器（同分隔线注释里的坑）。微信不认 scroll-snap 时退回连续滚动，仍可逐张看。
 const carouselHtml = (imgs: Array<[string, string]>, portraitSrcs?: ReadonlySet<string>) => {
   const items = imgs
     .map(([src, alt]) => {
       const p = portraitSrcs && portraitSrcs.has(src);
-      const width = p ? "75%" : "47%";
+      const width = p ? "75%" : "100%";
       return (
         '<img src="' +
         escapeHtml(imgSrc(src)) +
@@ -110,12 +111,12 @@ const carouselHtml = (imgs: Array<[string, string]>, portraitSrcs?: ReadonlySet<
         width +
         ";max-width:" +
         width +
-        ";height:auto;margin:18px 1.5% 10px;border:1px solid #3A8BE8;border-radius:4px;\"/>"
+        ";-webkit-box-sizing:border-box;box-sizing:border-box;height:auto;margin:18px auto 10px;border:1px solid #3A8BE8;border-radius:4px;\"/>"
       );
     })
     .join("");
   return (
-    '<section style="white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:6px auto;">' +
+    '<section style="white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:6px auto;text-align:center;">' +
     items +
     "</section>"
   );
