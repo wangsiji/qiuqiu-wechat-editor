@@ -170,9 +170,10 @@
 .article-paper img { display: block; box-sizing: border-box; width: 100%; max-width: 100%; height: auto; margin: 18px auto 10px; border: 1px solid #3a8be8; border-radius: 0; box-shadow: none; }
 .article-paper img:first-of-type { display: block; width: 100%; height: auto; margin: 0 0 20px; border: none; border-radius: 0; }
 .article-paper img.qwe-portrait { width: 75%; max-width: 75%; }
-.article-paper .qwe-carousel { white-space: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; padding: 6px 4px; text-align: center; }
+.article-paper .qwe-carousel { white-space: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; width: 75%; max-width: 75%; box-sizing: border-box; padding: 6px 4px; text-align: center; margin: 6px auto 0; }
 .article-paper .qwe-carousel .qwe-carousel-item { display: inline-block; vertical-align: bottom; width: 100%; margin: 0; padding: 0 6px; box-sizing: border-box; scroll-snap-align: center; }
-.article-paper .qwe-carousel img { width: 75%; max-width: 75%; height: auto; max-height: 90vh; object-fit: contain; display: block; margin: 0 auto; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.10); border: none; }
+.article-paper .qwe-carousel img { width: 100%; max-width: 100%; height: auto; max-height: 90vh; object-fit: contain; display: block; margin: 0 auto; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.10); border: none; }
+.article-paper .qwe-carousel img.qwe-portrait { width: 75%; max-width: 75%; }
 .qwe-carousel-hint { text-align: center; font-size: 12px; line-height: 18px; color: #8C8C8C; margin: 4px 0; }
 .qwe-carousel-hint .qwe-b { color: #3A8BE8; }
 .qwe-clip-holder { position: fixed; left: -100000px; top: 0; opacity: 0; pointer-events: none; }
