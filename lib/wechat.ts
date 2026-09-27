@@ -140,7 +140,8 @@ const listHtml = (rows: ListRow[]) =>
       const marker = row.ordered ? index + 1 + ". " : depth > 0 ? "◦ " : "• ";
       const markerStyle =
         "color:#3A8BE8;font-weight:700;margin-right:.4em;";
-      const pad = depth > 0 ? "padding-left:" + depth * 1.2 + "em;" : "";
+      // 所有层级统一缩进：首层也给留白，嵌套逐层加深 1.1em。
+      const pad = "padding-left:" + (depth + 1) * 1.1 + "em;";
       return (
         '<p style="' +
         LIST_LI +

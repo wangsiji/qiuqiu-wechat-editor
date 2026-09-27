@@ -80,11 +80,12 @@ test("微信导出：小节前缀不包 span，编号与标题不断行", () => 
   assert.doesNotMatch(html, /<span[^>]*>01｜<\/span>/);
 });
 
-test("微信导出：嵌套列表保留层级（padding 缩进）", () => {
+test("微信导出：嵌套列表保留层级（所有层级 padding 缩进）", () => {
   const html = renderWechat("- 一级 A\n  - 二级 A1\n- 一级 B\n");
   assert.doesNotMatch(html, /<ul/);
-  assert.match(html, /padding-left:1\.2em;["]*><strong[^>]*>◦ <\/strong>二级 A1/);
-  assert.match(html, /• <\/strong>一级 A/);
+  assert.match(html, /padding-left:2\.2em;[\"]*><strong[^>]*>◦ <\/strong>二级 A1/);
+  // 首层也要缩进 1.1em
+  assert.match(html, /padding-left:1\.1em;[\"]*><strong[^>]*>• <\/strong>一级 A/);
 });
 
 test("微信导出：首图无描边，正文图有描边", () => {
