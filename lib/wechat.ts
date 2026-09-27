@@ -107,7 +107,7 @@ const carouselHtml = (imgs: Array<[string, string]>, portraitSrcs?: ReadonlySet<
         escapeHtml(imgSrc(src)) +
         '" alt="' +
         escapeHtml(alt) +
-        '" style="display:inline-block;vertical-align:top;box-sizing:border-box;width:' +
+        '" style="display:inline-block;vertical-align:bottom;box-sizing:border-box;width:' +
         width +
         ";max-width:" +
         width +
