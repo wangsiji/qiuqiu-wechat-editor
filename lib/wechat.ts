@@ -97,11 +97,10 @@ const imageHtml = (src: string, alt: string, isCover = false, isPortrait = false
 // 每张 item 占满容器宽度(竖图例外仍75%居中避免过长)，一次只显示一张，
 // 左右滑动逐张切换。容器用 section 且不写自闭合，避免微信把自闭合 section
 // 当未关闭容器（同分隔线注释里的坑）。微信不认 scroll-snap 时退回连续滚动，仍可逐张看。
-const carouselHtml = (imgs: Array<[string, string]>, portraitSrcs?: ReadonlySet<string>) => {
+const carouselHtml = (imgs: Array<[string, string]>) => {
   const items = imgs
     .map(([src, alt]) => {
-      const p = portraitSrcs && portraitSrcs.has(src);
-      const width = p ? "75%" : "100%";
+      const width = "75%";
       return (
         '<img src="' +
         escapeHtml(imgSrc(src)) +
@@ -345,7 +344,7 @@ export function renderWechat(
       }
       imageCount += group.length;
       if (group.length >= 2) {
-        out += carouselHtml(group, portraitSrcs);
+        out += carouselHtml(group);
       } else {
         // 首图（文章第一张）不带 cover 边框逻辑；这里若首图被并排则无 cover 语义。
         out += imageHtml(group[0][0], group[0][1], firstCount === 1, portraitSrcs ? portraitSrcs.has(group[0][0]) : false);
