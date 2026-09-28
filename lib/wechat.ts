@@ -103,21 +103,24 @@ const carouselHtml = (imgs: Array<[string, string]>, portraitSrcs?: ReadonlySet<
       const p = portraitSrcs && portraitSrcs.has(src);
       const width = p ? "75%" : "100%";
       return (
+        // 每张外包一个撑满容器宽的 span（占一屏，滚动才露出下一张），图在 span 内按横/竖定宽居中。
+        '<span style="display:inline-block;vertical-align:top;width:100%;box-sizing:border-box;text-align:center;padding:0 4px;scroll-snap-align:start;">' +
         '<img src="' +
         escapeHtml(imgSrc(src)) +
         '" alt="' +
         escapeHtml(alt) +
-        '" style="display:inline-block;vertical-align:bottom;box-sizing:border-box;width:' +
+        '" style="display:block;box-sizing:border-box;width:' +
         width +
         ";max-width:" +
         width +
-        ";height:auto;margin:0 4px 12px;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.10);scroll-snap-align:start;\"/>"
-              );
+        ";height:auto;margin:0 auto 12px;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.10);\"/>" +
+        "</span>"
+      );
     })
     .join("");
   return (
-    // 加 scroll-snap 让单张平滑吸附，默认显示完整的一张
-    '<section style="white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;width:75%;box-sizing:border-box;margin:6px auto 0;text-align:center;">' +
+    // 加 scroll-snap 让单张平滑吸附，默认只显示第一张
+    '<section style="white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;width:100%;box-sizing:border-box;margin:6px auto 0;">' +
     items +
     "</section>" +
     // 图片下方一行小字提示（括号用蓝色），微信内联样式。
