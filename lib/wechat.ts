@@ -111,10 +111,8 @@ const carouselHtml = (imgs: Array<[string, string]>, portraitSrcs?: ReadonlySet<
         width +
         ";max-width:" +
         width +
-        ";height:auto;margin:0 4px 12px;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.10);scroll-snap-align:center;" +
-        // 超高图限高 90vh 并 contain，保证单张完整可见
-        "max-height:90vh;object-fit:contain;\" />"
-      );
+        ";height:auto;margin:0 4px 12px;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.10);scroll-snap-align:start;\"/>"
+              );
     })
     .join("");
   return (
