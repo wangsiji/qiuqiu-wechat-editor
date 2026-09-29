@@ -1,10 +1,17 @@
+/// <reference types="@cloudflare/workers-types" />
 /** Cloudflare Worker entry point for the vinext-starter template. */
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
 
 interface Env {
-  ASSETS: Fetcher;
-  DB: D1Database;
+  // ASSETS/D1/IMAGES 均显式类型化，避免依赖全局 CF 类型（任何 tsconfig 下都严格可用）。
+  ASSETS: { fetch(request: Request): Promise<Response> };
+  DB: {
+    prepare(sql: string): {
+      bind(...values: unknown[]): unknown;
+      all<T = unknown>(): Promise<{ results: T[] }>;
+    };
+  };
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {

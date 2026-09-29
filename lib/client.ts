@@ -39,40 +39,17 @@ export async function detectPortrait(srcs: string[]): Promise<Set<string>> {
 
 /**
  * 复制富文本 HTML 到剪贴板（同时写 text/html 与纯文本版本）。
- * 优先 ClipboardItem；Safari 兜底用隐藏 contentEditable + execCommand。
+ * 用标准 ClipboardItem（全部现代引擎及 WebKit 13.1+ 均支持 text/html）。
  */
 export async function copyRichText(html: string): Promise<void> {
   // 解析富文本时不写 innerHTML（Obsidian 审核禁 no-inner-html），用标准 DOMParser。
   const parsedBody = () =>
     new DOMParser().parseFromString(html, "text/html").body;
   const plainText = parsedBody().textContent || "";
-  type CI = { supports?: (type: string) => boolean };
-  const hasHTML =
-    typeof ClipboardItem !== "undefined" &&
-    ((ClipboardItem as CI).supports?.("text/html") ?? true);
-  if (hasHTML && typeof navigator.clipboard?.write === "function") {
-    await navigator.clipboard.write([
-      new ClipboardItem({
-        "text/html": new Blob([html], { type: "text/html" }),
-        "text/plain": new Blob([plainText], { type: "text/plain" }),
-      }),
-    ]);
-    return;
-  }
-  const holder = document.createElement("div");
-  holder.contentEditable = "true";
-  holder.classList.add("qwe-clip-holder"); // 定位样式放 CSS，禁内联 style
-  holder.append(...Array.from(parsedBody().childNodes));
-  document.body.appendChild(holder);
-  const sel = window.getSelection();
-  const range = document.createRange();
-  range.selectNodeContents(holder);
-  sel?.removeAllRanges();
-  sel?.addRange(range);
-  try {
-    if (!document.execCommand("copy")) throw new Error("copy failed");
-  } finally {
-    sel?.removeAllRanges();
-    holder.remove();
-  }
+  await navigator.clipboard.write([
+    new ClipboardItem({
+      "text/html": new Blob([html], { type: "text/html" }),
+      "text/plain": new Blob([plainText], { type: "text/plain" }),
+    }),
+  ]);
 }

@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf, ItemView, sanitizeHTMLToDom } from "obsidian";
+import { Plugin, WorkspaceLeaf, ItemView, sanitizeHTMLToDom, TFile } from "obsidian";
 import { renderWechat } from "../lib/wechat";
 import { copyRichText, detectPortrait, imageSrcs } from "../lib/client";
 
@@ -21,7 +21,7 @@ function arrayBufferToBase64(buf: ArrayBuffer): string {
 class QiuqiuView extends ItemView {
   private md = "";
   private paper!: HTMLElement;
-  private linked: import("obsidian").TFile | null = null;
+  private linked: TFile | null = null;
   private styles: Array<{ id: string; label: string }> = [
     { id: "qiuqiu", label: "秋秋风格" },
   ];
@@ -105,8 +105,9 @@ class QiuqiuView extends ItemView {
     const onScrollCapture = (e: Event) => {
       const t = e.target as Element | null;
       if (!t || !t.closest(".cm-scroller")) return; // 只跟源编辑器滚动
-      const sc = t.closest(".cm-scroller") as HTMLElement | null;
-      if (!sc) return;
+      const m = t.closest(".cm-scroller");
+      if (!(m instanceof HTMLElement)) return;
+      const sc = m;
       const max = Math.max(0, sc.scrollHeight - sc.clientHeight);
       const sMax = Math.max(0, stage.scrollHeight - stage.clientHeight);
       if (max > 0) stage.scrollTop = (sc.scrollTop / max) * sMax;
@@ -167,7 +168,7 @@ class QiuqiuView extends ItemView {
     // 当前笔记内容变化（用户编辑保存）→ 重读并刷新预览
     this.registerEvent(
       this.app.vault.on("modify", async (f) => {
-        if (f === this.linked) {
+        if (f === this.linked && f instanceof TFile) {
           this.md = await this.app.vault.read(f);
           await refresh();
         }
@@ -180,17 +181,19 @@ class QiuqiuView extends ItemView {
       })
     );
 
-    btnCopy.addEventListener("click", async () => {
-      const html = await previewHtml(); // previewHtml 是闭包(非 this 方法)，勿加 this.
-      const external = (html.match(/<img[^>]+src="https?:/g) || []).length;
-      try {
-        await copyRichText(html);
-        notice.textContent = external
-          ? "已复制；" + external + " 张外链图需先传公众号素材库"
-          : "已复制富文本，可直接粘贴到公众号";
-      } catch {
-        notice.textContent = "复制失败，请用 Obsidian 桌面端";
-      }
+    btnCopy.addEventListener("click", () => {
+      void (async () => {
+        const html = await previewHtml(); // previewHtml 是闭包(非 this 方法)，勿加 this.
+        const external = (html.match(/<img[^>]+src="https?:/g) || []).length;
+        try {
+          await copyRichText(html);
+          notice.textContent = external
+            ? "已复制；" + external + " 张外链图需先传公众号素材库"
+            : "已复制富文本，可直接粘贴到公众号";
+        } catch {
+          notice.textContent = "复制失败，请用 Obsidian 桌面端";
+        }
+      })();
     });
   }
 
@@ -199,7 +202,7 @@ class QiuqiuView extends ItemView {
 
 export default class QiuqiuEditorPlugin extends Plugin {
   // 跨视图记住最近打开的 Markdown 笔记（参考 wechat-converter 的 lastActiveFile）
-  private lastActiveFile: import("obsidian").TFile | null = null;
+  private lastActiveFile: TFile | null = null;
 
   async onload() {
     this.registerView(VIEW_TYPE, (leaf: WorkspaceLeaf) => new QiuqiuView(leaf, this));
@@ -216,7 +219,7 @@ export default class QiuqiuEditorPlugin extends Plugin {
       this.app.workspace.on(
         "active-leaf-change",
         (leaf) => {
-          const view = leaf?.view as { file?: import("obsidian").TFile } | undefined;
+          const view = leaf?.view as { file?: TFile } | undefined;
           const file = view?.file;
           if (file && file.extension === "md") this.lastActiveFile = file;
         }
@@ -224,17 +227,20 @@ export default class QiuqiuEditorPlugin extends Plugin {
     );
   }
 
-  getActiveNote(): import("obsidian").TFile | null {
+  getActiveNote(): TFile | null {
     return this.lastActiveFile;
   }
 
   private async openView() {
     const { workspace } = this.app;
-    let leaf = workspace.getLeavesOfType(VIEW_TYPE)[0];
+    let leaf: WorkspaceLeaf | null =
+      workspace.getLeavesOfType(VIEW_TYPE)[0] ?? null;
     if (!leaf) {
       leaf = workspace.getRightLeaf(false);
-      if (leaf) await leaf.setViewState({ type: VIEW_TYPE, active: true });
     }
-    if (leaf) workspace.revealLeaf(leaf);
+    if (leaf) {
+      await leaf.setViewState({ type: VIEW_TYPE, active: true });
+      await workspace.revealLeaf(leaf);
+    }
   }
 }

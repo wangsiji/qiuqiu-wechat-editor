@@ -3,6 +3,7 @@
 import "./qiuqiu.css";
 import "./layout.css";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { loadDraft, saveDraft } from "./draft-store";
 
 type Theme = readonly [id: string, name: string, accent: string, soft: string];
 const themes: Theme[] = [["qiuqiu", "秋秋同款", "#d9898e", "#f8f1f2"]];
@@ -140,12 +141,7 @@ import { copyRichText, detectPortrait, imageSrcs, isPortrait } from "../lib/clie
 const OLD_SAMPLE_MARKER = "# 1、认识你的 AI 工作台";
 
 export default function Home() {
-  const [md, setMd] = useState(() => {
-    if (typeof window === "undefined") return sample;
-    const draft = localStorage.getItem("qiuqiu-draft-v2");
-    if (draft && !draft.includes(OLD_SAMPLE_MARKER)) return draft;
-    return sample;
-  });
+  const [md, setMd] = useState(sample);
   const [tid, setTid] = useState("qiuqiu");
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
   const [notice, setNotice] = useState("");
@@ -154,8 +150,17 @@ export default function Home() {
   const theme = themes.find((item) => item[0] === tid) || themes[0];
   const html = useMemo(() => render(md), [md]);
 
+  // 挂载时异步读回草稿（IndexedDB）。
   useEffect(() => {
-    const timer = window.setTimeout(() => localStorage.setItem("qiuqiu-draft-v2", md), 300);
+    if (typeof window === "undefined") return;
+    void loadDraft().then((draft) => {
+      if (draft && !draft.includes(OLD_SAMPLE_MARKER)) setMd(draft);
+    });
+  }, []);
+
+  // 防抖 300ms 自动保存草稿（IndexedDB）。
+  useEffect(() => {
+    const timer = window.setTimeout(() => { void saveDraft(md); }, 300);
     return () => window.clearTimeout(timer);
   }, [md]);
 
@@ -207,7 +212,7 @@ export default function Home() {
   return <main className="editor-shell">
     <header className="topbar">
       <div className="brand-lockup"><div className="brand-mark">秋</div><div><div className="brand-name">秋秋编辑器</div><div className="brand-subtitle">公众号 Markdown 排版工作台</div></div></div>
-      <div className="top-actions"><span className="copy-notice" style={{ maxWidth: 300, overflow: "hidden", color: "#718296", fontSize: 10, textOverflow: "ellipsis", whiteSpace: "nowrap" }} aria-live="polite">{notice}</span><button className="quiet-button" onClick={() => setMd(sample)} aria-label="恢复示例 Markdown">恢复示例</button><button className="quiet-button" onClick={() => file.current?.click()} aria-label="导入 Markdown 文件">导入 Markdown</button><input ref={file} hidden type="file" accept=".md,.markdown,.txt" aria-label="Markdown 文件" onChange={async (event) => { const selected = event.target.files?.[0]; if (selected) setMd(await selected.text()); }} /><button className="copy-button" onClick={copy} aria-label="复制排版后的内容到公众号">{copyStatus === "copied" ? "已复制 ✓" : copyStatus === "error" ? "复制失败" : "复制到公众号"}</button></div>
+      <div className="top-actions"><span className="copy-notice" style={{ maxWidth: 300, overflow: "hidden", color: "#718296", fontSize: 10, textOverflow: "ellipsis", whiteSpace: "nowrap" }} aria-live="polite">{notice}</span><button className="quiet-button" onClick={() => setMd(sample)} aria-label="恢复示例 Markdown">恢复示例</button><button className="quiet-button" onClick={() => file.current?.click()} aria-label="导入 Markdown 文件">导入 Markdown</button><input ref={file} hidden type="file" accept=".md,.markdown,.txt" aria-label="Markdown 文件" onChange={(event) => { const selected = event.target.files?.[0]; if (selected) { void selected.text().then(setMd); } }} /><button className="copy-button" onClick={() => { void copy(); }} aria-label="复制排版后的内容到公众号">{copyStatus === "copied" ? "已复制 ✓" : copyStatus === "error" ? "复制失败" : "复制到公众号"}</button></div>
     </header>
     <section className="workspace">
       <aside className="editor-panel"><div className="panel-heading"><div><span className="eyebrow">WRITE</span><h1>Markdown 草稿</h1></div><span className="save-dot">已自动保存</span></div><div className="toolbar" aria-label="Markdown 工具栏"><button onClick={() => add("**重点文字**")} aria-label="插入加粗文本" title="加粗">B</button><button onClick={() => add("# 一级标题\n\n")} aria-label="插入一级标题" title="一级标题">H1</button><button onClick={() => add("> 引用\n")} aria-label="插入引用" title="引用">❞</button><button onClick={() => add("- 列表项\n")} aria-label="插入无序列表" title="无序列表">☷</button></div><textarea ref={ref} className="markdown-editor" value={md} onChange={(event) => setMd(event.target.value)} spellCheck={false} aria-label="Markdown 草稿编辑区" /><div className="editor-footer"><span>{md.length} 字符</span><span>实时预览</span></div></aside>

@@ -4,6 +4,8 @@
 
 **Markdown → 公众号精美排版，一键所见即所得。**
 
+> **English / Description.** QiuQiu WeChat Editor turns Markdown into WeChat-friendly rich content with a live preview and a one-click export. It renders numbered sections, multi-image carousels, portrait-aware image sizing, nested lists, data tables and callout blocks, then inlines every style so pasting into the WeChat editor keeps the layout exactly as previewed. The same rendering kernel powers both the web workbench and the Obsidian plugin, so what you see is what you publish. Fully open source (MIT) — installable in Obsidian from Community Plugins, or used in any browser.
+
 自动章节号 · 图片轮播 / 竖图自适应 · 嵌套列表 · 数据表格 · Callout —— 生成全内联样式，粘贴微信后台**不丢格式**。
 
 在线体验 **[wangsiji.github.io/qiuqiu-wechat-editor](https://wangsiji.github.io/qiuqiu-wechat-editor/)** · 网页版 & Obsidian 插件
