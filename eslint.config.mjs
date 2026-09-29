@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "main.js",
+    "styles.css",
     "obsidian-plugin/main.js",
     "obsidian-plugin/node_modules/**",
   ]),
