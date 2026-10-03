@@ -151,3 +151,20 @@ test("微信导出：图片并排时首图不当作封面", () => {
   const html = renderWechat("![a](/a.png)\n![b](/b.png)\n\n正文文字\n");
   assert.doesNotMatch(html, /border:none;border-radius:0;/);
 });
+
+test("风格2：切换到 style2 调色板，主侧重色替换为翠微/矢车菊蓝", () => {
+  const md = "# 章节\n\n正文 **重点** `代码` ~~删线~~ [链接](https://x.com)\n\n> 引用\n";
+  const qiu = renderWechat(md, { palette: "qiuqiu" });
+  const s2 = renderWechat(md, { palette: "style2" });
+  // 章节数字：秋秋粉 → 翠微
+  assert.match(qiu, /color:#D9898E/);
+  assert.match(s2, /color:#5E8034/);
+  // 二级强调/加粗 → 矢车菊蓝
+  assert.match(s2, /color:#5A92E5/);
+  // 行内代码字 → 碧青
+  assert.match(s2, /color:#41B5C2/);
+  // 两者不同
+  assert.notEqual(qiu, s2);
+  // 默认渲染 == 秋秋
+  assert.equal(renderWechat(md), renderWechat(md, { palette: "qiuqiu" }));
+});

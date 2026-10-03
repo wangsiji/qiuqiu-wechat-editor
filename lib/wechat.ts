@@ -9,29 +9,66 @@
 
 import { escapeHtml, safeUrl } from "./render.ts";
 
+// 风格调色板：所有主题配色集中定义，渲染时按当前风格取色。
+// qiuqiu = 秋秋风格（粉 → 蓝 递进）· style2 = 翠微/矢车菊蓝（生气/理智）。
+export type Palette = {
+  label: string;
+  accent: string;   // 大章节数字/标题（秋秋粉）
+  accentSoft: string; // 引用/提示条强调线 & 强调字（秋秋蓝 → 全篇强调主色）
+  link: string;      // 链接
+  code: string;      // 行内代码字
+  codeBg: string;    // 行内代码底
+  calloutBg: string; // 提示条底
+  quote: string;     // 引用左线
+  quoteBg: string;   // 引用底
+  tableHead: string; // 表头字
+  tableHeadBg: string; // 表头底
+  tableBg: string;   // 表格底
+  divide: string;    // 分隔线
+};
+
+export const PALETTES: Record<string, Palette> = {
+  qiuqiu: {
+    accent: "#D9898E", accentSoft: "#3A8BE8", link: "#16B99A", code: "#12A98D", codeBg: "#F1FAF8",
+    calloutBg: "#F6FAFE",
+    quote: "#DB7A0E", quoteBg: "#FEF9EA", tableHead: "#5C7D9B", tableHeadBg: "#F5F0E8", tableBg: "#FFFCF7",
+    divide: "#74AEEF", label: "秋秋风格",
+  },
+  style2: {
+    accent: "#5E8034", accentSoft: "#5A92E5", link: "#41B5C2", code: "#41B5C2", codeBg: "#EFF8F2",
+    calloutBg: "#EAF4FB",
+    quote: "#DB7A0E", quoteBg: "#FEF6EA", tableHead: "#5A92E5", tableHeadBg: "#F0F4FB", tableBg: "#FBFCFF",
+    divide: "#5E8034", label: "风格2",
+  },
+};
+
+// ponytail: 模块级当前风格。同步渲染单用户复制，多调并发可再扩展为显式传参。
+let CUR: Palette = PALETTES.qiuqiu;
+
 // 图片 src 额外放行 data:image URI（公众号 Markdown 里以 base64 内联本地图时用）。
 // 链接 <a href> 仍锁死 safeUrl，不允许 data:，防 XSS。
 const imgSrc = (url: string) =>
   /^data:image/i.test(url.trim()) ? url.trim() : safeUrl(url);
 
-const INLINE_CODE =
-  "color:#12A98D;background:#F1FAF8;font-family:'SFMono-Regular',Consolas,Menlo,monospace;" +
+const INLINE_CODE = () =>
+  "color:" + CUR.code + ";background:" + CUR.codeBg +
+  ";font-family:'SFMono-Regular',Consolas,Menlo,monospace;" +
   "font-size:.88em;line-height:1.5;padding:1px 3px;border-radius:2px;overflow-wrap:anywhere;";
-const LINK_STYLE = "color:#16B99A;font-weight:500;text-decoration:none;";
-const STRIKE_STYLE = "color:#3A8BE8;text-decoration:line-through;";
+const LINK_STYLE = () => "color:" + CUR.link + ";font-weight:500;text-decoration:none;";
+const STRIKE_STYLE = () => "color:" + CUR.accentSoft + ";text-decoration:line-through;";
 
 // 微信行内渲染：不依赖预览 CSS class，直接产出可粘贴的标签与样式。
-// accent 用于给标题内的强调继承标题色（章节粉红、小节蓝），普通正文强调统一蓝。
+// accent 用于给标题内的强调继承标题色（章节粉、小节蓝），普通正文强调统一主色。
 function wechatInline(s: string, accent?: string): string {
-  const strong = "color:" + (accent || "#3A8BE8") + ";font-weight:700;";
-  const em = "color:" + (accent || "#3A8BE8") + ";font-style:italic;";
+  const strong = "color:" + (accent || CUR.accentSoft) + ";font-weight:700;";
+  const em = "color:" + (accent || CUR.accentSoft) + ";font-style:italic;";
   return escapeHtml(s)
     .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m: string, alt: string, src: string) => '<img src="' + escapeHtml(imgSrc(src)) + '" alt="' + escapeHtml(alt) + '"/>')
-    .replace(/`([^`]+)`/g, (_m: string, c: string) => '<code style="' + INLINE_CODE + '">' + c + '</code>')
-    .replace(/~~([^~]+)~~/g, (_m: string, t: string) => '<span style="' + STRIKE_STYLE + '">' + t + '</span>')
+    .replace(/`([^`]+)`/g, (_m: string, c: string) => '<code style="' + INLINE_CODE() + '">' + c + '</code>')
+    .replace(/~~([^~]+)~~/g, (_m: string, t: string) => '<span style="' + STRIKE_STYLE() + '">' + t + '</span>')
     .replace(/\*\*([^*]+)\*\*/g, (_m: string, t: string) => '<strong style="' + strong + '">' + t + '</strong>')
     .replace(/\*([^*]+)\*/g, (_m: string, t: string) => '<em style="' + em + '">' + t + '</em>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m: string, label: string, href: string) => '<a href="' + escapeHtml(safeUrl(href)) + '" style="' + LINK_STYLE + '">' + label + '</a>');
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m: string, label: string, href: string) => '<a href="' + escapeHtml(safeUrl(href)) + '" style="' + LINK_STYLE() + '">' + label + '</a>');
 }
 
 const BODY =
@@ -45,29 +82,28 @@ const LEAD_BODY =
   "text-align:justify;overflow-wrap:break-word;" +
   "font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','PingFang SC','Helvetica Neue',Arial,sans-serif;";
 
-// Callout 信息条：浅蓝底 + 蓝色左线。微信不支持自由容器，按规格用每条
-// <p> 承载整条背景/左边线（与引用同思路），标题行用蓝色加粗。
-const CALLOUT_TITLE =
-  "margin:0;padding:4px 14px 2px;font-size:15px;line-height:1.6;font-weight:700;color:#3A8BE8;text-align:left;background:#F6FAFE;border-left:3px solid #3A8BE8;";
-const CALLOUT_LINE =
-  "margin:0;padding:2px 14px 4px;font-size:15px;line-height:1.6;color:#333333;text-align:left;background:#F6FAFE;border-left:3px solid #3A8BE8;";
+// Callout 信息条：浅底 + 强调色左线。微信不支持自由容器，按规格用每条
+// <p> 承载整条背景/左边线（与引用同思路），标题行用强调色加粗。
+const CALLOUT_TITLE = () =>
+  "margin:0;padding:4px 14px 2px;font-size:15px;line-height:1.6;font-weight:700;color:" + CUR.accentSoft + ";text-align:left;background:" + CUR.calloutBg + ";border-left:3px solid " + CUR.accentSoft + ";";
+const CALLOUT_LINE = () =>
+  "margin:0;padding:2px 14px 4px;font-size:15px;line-height:1.6;color:#333333;text-align:left;background:" + CUR.calloutBg + ";border-left:3px solid " + CUR.accentSoft + ";";
 
-// 章节数字（60px 粉红 Times）+ 章节标题（19px 粉红，居中，带等宽细粉下划线）
 const chapter = (num: number, titleHtml: string) =>
   '<p style="margin:20px auto 10px;padding:0;text-align:center;font-size:60px;line-height:66px;' +
-  "font-weight:700;font-family:'Times New Roman',Times,'Songti SC',serif;color:#D9898E;" +
+  "font-weight:700;font-family:'Times New Roman',Times,'Songti SC',serif;color:" + CUR.accent + ";" +
   'font-variant-numeric:lining-nums tabular-nums;letter-spacing:-1px;white-space:nowrap;">' +
   num +
   '</p><p style="margin:8px auto 24px;padding:0;text-align:center;font-size:19px;line-height:28px;' +
-  'font-weight:800;color:#D9898E;">' +
+  'font-weight:800;color:' + CUR.accent + ';">' +
   titleHtml +
   "</p>";
 
-// 小节：蓝色加粗，带「1.1｜」或「01｜」前缀。
+// 小节：blue 加粗，带「1.1｜」或「01｜」前缀。
 // 前缀不单独包 <span>：微信后台常把 span 单独转成一个块导致“编号与标题断行”。
-// 整个 <p> 已是蓝色，前缀直接作为普通文本拼在标题前。
+// 整个 <p> 已是强调色，前缀直接作为普通文本拼在标题前。
 const section = (prefix: string, titleHtml: string) =>
-  '<p style="margin:28px 0 12px;padding:0;font-size:17px;line-height:27px;font-weight:800;color:#3A8BE8;' +
+  '<p style="margin:28px 0 12px;padding:0;font-size:17px;line-height:27px;font-weight:800;color:' + CUR.accentSoft + ';' +
   'text-align:left;">' +
   prefix +
   titleHtml +
@@ -88,7 +124,7 @@ const imageHtml = (src: string, alt: string, isCover = false, isPortrait = false
     ";max-width:" +
     width +
     ";height:auto;margin:18px auto 10px;" +
-    (isCover ? "border:none;border-radius:0;" : "border:1px solid #3A8BE8;border-radius:0;") +
+    (isCover ? "border:none;border-radius:0;" : "border:1px solid " + CUR.accentSoft + ";border-radius:0;") +
     '"/>'
   );
 };
@@ -124,7 +160,7 @@ const carouselHtml = (imgs: Array<[string, string]>, portraitSrcs?: ReadonlySet<
     items +
     "</section>" +
     // 图片下方一行小字提示（括号用蓝色），微信内联样式。
-    '<p style="display:block;margin:0 0 20px;padding:0;text-align:center;font-size:12px;line-height:18px;color:#8C8C8C;"><span style="color:#3A8BE8;">（</span>左右滑动图片<span style="color:#3A8BE8;">）</span></p>'
+    '<p style="display:block;margin:0 0 20px;padding:0;text-align:center;font-size:12px;line-height:18px;color:#8C8C8C;"><span style="color:' + CUR.accentSoft + ';">（</span>左右滑动图片<span style="color:' + CUR.accentSoft + ';">）</span></p>'
   );
 };
 
@@ -143,7 +179,7 @@ const listHtml = (rows: ListRow[]) =>
       const depth = row.depth;
       const marker = row.ordered ? index + 1 + ". " : depth > 0 ? "◦ " : "• ";
       const markerStyle =
-        "color:#3A8BE8;font-weight:700;margin-right:.4em;";
+        "color:" + CUR.accentSoft + ";font-weight:700;margin-right:.4em;";
       // 所有层级统一缩进：首层也给留白，嵌套逐层加深 1.1em。
       const pad = "padding-left:" + (depth + 1) * 1.1 + "em;";
       return (
@@ -167,7 +203,7 @@ const tableHtml = (raw: string[][]) => {
   const head = raw[0]
     .map(
       (c) =>
-        '<th style="color:#5C7D9B;background:#F5F0E8;font-size:14px;line-height:23px;font-weight:800;' +
+        '<th style="color:' + CUR.tableHead + ';background:' + CUR.tableHeadBg + ';font-size:14px;line-height:23px;font-weight:800;' +
         "letter-spacing:.4px;padding:10px 8px 9px;border-bottom:1px solid #EAE2D7;text-align:center;\">" +
         wechatInline(c.trim()) +
         "</th>"
@@ -181,7 +217,7 @@ const tableHtml = (raw: string[][]) => {
         row
           .map(
             (c) =>
-              '<td style="background:#FFFCF7;padding:10px 9px 11px;color:#333333;text-align:center;' +
+              '<td style="background:' + CUR.tableBg + ';padding:10px 9px 11px;color:#333333;text-align:center;' +
               'vertical-align:middle;">' +
               wechatInline(c.trim()) +
               "</td>"
@@ -192,7 +228,7 @@ const tableHtml = (raw: string[][]) => {
     .join("");
   return (
     '<table style="width:100%;max-width:100%;border-collapse:separate;border-spacing:0;margin:8px 0 10px;' +
-    'font-size:13px;line-height:21px;table-layout:fixed;word-break:break-word;background:#FFFCF7;' +
+    'font-size:13px;line-height:21px;table-layout:fixed;word-break:break-word;background:' + CUR.tableBg + ';' +
     'border:1px solid #EEE7DD;border-radius:10px;overflow:hidden;">' +
     "<thead><tr>" +
     head +
@@ -211,19 +247,20 @@ const codeHtml = (text: string) =>
 
 // 引用：不用 <section> 容器（微信后台会把 section 当作独立容器引发窄排/拆行），
 // 改为连续多行 <p> + 左侧金黄竖线、浅黄底。
-const QUOTE_LINE =
+const QUOTE_LINE = () =>
   "margin:0;padding:3px 12px;font-size:15px;line-height:28px;color:#333333;" +
-  "text-align:left;border-left:3px solid #DB7A0E;background:#FEF9EA;";
+  "text-align:left;border-left:3px solid " + CUR.quote + ";";
 const quoteHtml = (rows: string[]) =>
   rows
-    .map((q) => '<p style="' + QUOTE_LINE + '">' + wechatInline(q) + "</p>")
+    .map((q) => '<p style="' + QUOTE_LINE() + ';background:' + CUR.quoteBg + '">' + wechatInline(q) + "</p>")
     .join("");
 
 // 逐行块级解析（预览渲染器同一套逻辑，但输出微信专用 HTML）
 export function renderWechat(
   md: string,
-  options: { portrait?: ReadonlySet<string> } = {}
+  options: { portrait?: ReadonlySet<string>; palette?: string } = {}
 ): string {
+  CUR = PALETTES[options.palette || "qiuqiu"] || PALETTES.qiuqiu;
   const portraitSrcs = options.portrait;
   const lines = md.split(/\r?\n/);
   const legacy = /^#{6}\s+(\d+)$/.test(lines.join("\n")) ||
@@ -258,8 +295,8 @@ export function renderWechat(
   const flushCallout = () => {
     if (callout) {
       out +=
-        '<p style="' + CALLOUT_TITLE + '">' + wechatInline(callout.title) + "</p>" +
-        callout.rows.map((r) => '<p style="' + CALLOUT_LINE + '">' + wechatInline(r) + "</p>").join("");
+        '<p style="' + CALLOUT_TITLE() + '">' + wechatInline(callout.title) + "</p>" +
+        callout.rows.map((r) => '<p style="' + CALLOUT_LINE() + '">' + wechatInline(r) + "</p>").join("");
       callout = null;
     }
   };
@@ -304,7 +341,7 @@ export function renderWechat(
     if (legacyNum) {
       flush();
       out += '<p style="margin:20px auto 10px;text-align:center;font-size:60px;line-height:66px;' +
-        "font-weight:700;font-family:'Times New Roman',Times,'Songti SC',serif;color:#D9898E;\">" +
+        "font-weight:700;font-family:'Times New Roman',Times,'Songti SC',serif;color:" + CUR.accent + ";\">" +
         legacyNum[1] +
         "</p>";
     } else if (/^\s*(---+|___+|\*\s*\*\s*\*+)\s*$/.test(line)) {
@@ -313,7 +350,7 @@ export function renderWechat(
       // 内容包进窄容器导致每两字一行的竖排），改为 p + 内层 span 装饰线。
       out +=
         '<p style="margin:28px auto;padding:0;line-height:0;text-align:center;">' +
-        '<span style="display:inline-block;width:46px;border-top:1px solid #74AEEF;">' +
+        '<span style="display:inline-block;width:46px;border-top:1px solid ' + CUR.divide + ';">' +
         "&nbsp;</span></p>";
     } else if (isTable) {
       flush();
@@ -355,7 +392,7 @@ export function renderWechat(
     } else if (heading) {
       flush();
       const level = heading[1].length;
-      const text = wechatInline(heading[2], level === 1 ? "#D9898E" : level === 2 ? "#3A8BE8" : undefined);
+      const text = wechatInline(heading[2], level === 1 ? CUR.accent : level === 2 ? CUR.accentSoft : undefined);
       const handNum = level <= 2 ? heading[2].match(/^\s*(\d+(?:\.\d+)?)\s*[、.．)）（：]\s*(.+)$/) : null;
       if (!legacy && level === 1 && !handNum) {
         chapterNo += 1;
@@ -367,10 +404,10 @@ export function renderWechat(
         out += section(chapterNo > 0 ? chapterNo + "." + sectionNo + "｜" : String(sectionNo).padStart(2, "0") + "｜", text);
       } else {
         out += '<p style="' + (level === 1
-          ? "margin:8px auto 24px;text-align:center;font-size:19px;line-height:28px;font-weight:800;color:#D9898E;"
+          ? "margin:8px auto 24px;text-align:center;font-size:19px;line-height:28px;font-weight:800;color:" + CUR.accent + ";"
           : level === 2
-            ? "margin:28px 0 12px;font-size:17px;line-height:27px;font-weight:800;color:#3A8BE8;text-align:left;"
-            : "margin:24px 0 10px;font-size:16px;line-height:23px;font-weight:700;color:#3A8BE8;text-align:left;") + '">' + text + "</p>";
+            ? "margin:28px 0 12px;font-size:17px;line-height:27px;font-weight:800;color:" + CUR.accentSoft + ";text-align:left;"
+            : "margin:24px 0 10px;font-size:16px;line-height:23px;font-weight:700;color:" + CUR.accentSoft + ";text-align:left;") + '">' + text + "</p>";
       }
     } else if (item) {
       if (paragraph.length) flushParagraph();

@@ -22,9 +22,11 @@ class QiuqiuView extends ItemView {
   private md = "";
   private paper!: HTMLElement;
   private linked: TFile | null = null;
-  private styles: Array<{ id: string; label: string }> = [
-    { id: "qiuqiu", label: "秋秋风格" },
+  private styles: Array<{ id: string; label: string; accent?: string }> = [
+    { id: "qiuqiu", label: "秋秋风格", accent: "#D9898E" },
+    { id: "style2", label: "风格2", accent: "#5E8034" },
   ];
+  private curStyle = "qiuqiu";
 
   constructor(leaf: WorkspaceLeaf, private plugin: QiuqiuEditorPlugin) {
     super(leaf);
@@ -121,16 +123,20 @@ class QiuqiuView extends ItemView {
     topbar.createDiv({ cls: "qwe-brand", text: "秋秋公众号排版工作台" });
     const actions = topbar.createDiv({ cls: "qwe-actions" });
     const notice = actions.createSpan({ cls: "qwe-notice" });
-    // 风格勾选：默认秋秋风格；以后加新风格只需往 this.styles 里加一项。
+    // 风格选择：单选（每次渲染只用一个风格），选中即切换配色并实时刷新预览。
+    // styles 里加一项即多一种风格；renderWechat 按 palette=id 取色。
     const styleBox = actions.createDiv({ cls: "qwe-styles" });
+    const boxes: HTMLInputElement[] = [];
     this.styles.forEach((s) => {
       const label = styleBox.createEl("label", { cls: "qwe-style" });
       const cb = label.createEl("input", { type: "checkbox" });
-      cb.checked = true;
+      cb.checked = s.id === this.curStyle;
+      boxes.push(cb);
       cb.addEventListener("change", () => {
-        notice.textContent = cb.checked ? "已选：" + s.label : "未选任何风格";
-        cb.checked = true; // 至少要有一个风格，暂时不允许全关
+        this.curStyle = s.id;
+        boxes.forEach((b) => { b.checked = b === cb; });
         notice.textContent = "已选：" + s.label;
+        void refresh();
       });
       label.appendText(s.label);
     });
@@ -152,7 +158,7 @@ class QiuqiuView extends ItemView {
     const previewHtml = async () => {
       const md = await this.exportMarkdown();
       const portrait = await detectPortrait(imageSrcs(md));
-      return renderWechat(md, { portrait });
+      return renderWechat(md, { portrait, palette: this.curStyle });
     };
 
     // 默认载入当前已打开的笔记，改动时实时跟随（编辑在 Obsidian 原生编辑器里做）。
